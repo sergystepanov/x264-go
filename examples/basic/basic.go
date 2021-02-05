@@ -6,7 +6,7 @@ import (
 	_ "image/jpeg"
 	"os"
 
-	"github.com/gen2brain/x264-go"
+	"github.com/sergystepanov/x264-go/v2"
 )
 
 func main() {
@@ -14,9 +14,9 @@ func main() {
 		Width:     640,
 		Height:    480,
 		FrameRate: 25,
-		Preset:    "veryfast",
-		Tune:      "zerolatency",
-		Profile:   "baseline",
+		Preset:    "fast",
+		Tune:      "stillimage",
+		Profile:   "high",
 		LogLevel:  x264.LogDebug,
 	}
 
@@ -49,6 +49,12 @@ func main() {
 	}
 
 	err = enc.Encode(img)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+
+	err = enc.Flush()
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)

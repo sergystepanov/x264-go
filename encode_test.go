@@ -2,6 +2,7 @@ package x264
 
 import (
 	"bytes"
+	color2 "github.com/sergystepanov/x264-go/v2/x264c/color"
 	"image"
 	"image/color"
 	"image/draw"
@@ -20,7 +21,7 @@ func TestEncode(t *testing.T) {
 		FrameRate: 25,
 		Tune:      "zerolatency",
 		Preset:    "veryfast",
-		Profile:   "baseline",
+		Profile:   "high",
 		LogLevel:  LogDebug,
 	}
 
@@ -29,7 +30,7 @@ func TestEncode(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	img := NewYCbCr(image.Rect(0, 0, opts.Width, opts.Height))
+	img := color2.NewYCbCr(image.Rect(0, 0, opts.Width, opts.Height))
 	draw.Draw(img, img.Bounds(), image.Black, image.ZP, draw.Src)
 
 	for i := 0; i < opts.Width/2; i++ {
@@ -75,7 +76,7 @@ func TestEncodeFlush(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	img := NewYCbCr(image.Rect(0, 0, opts.Width, opts.Height))
+	img := color2.NewYCbCr(image.Rect(0, 0, opts.Width, opts.Height))
 	draw.Draw(img, img.Bounds(), image.Black, image.ZP, draw.Src)
 
 	for i := 0; i < opts.Width/2; i++ {

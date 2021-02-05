@@ -1,5 +1,6 @@
-// +build !legacy
+// +build legacy
 
+// Package x264 provides H.264/MPEG-4 AVC codec encoder based on [x264](https://www.videolan.org/developers/x264.html) library.
 package x264
 
 import "C"
@@ -10,7 +11,7 @@ import (
 	"image"
 	"io"
 
-	x264c "github.com/sergystepanov/x264-go/v2/x264c/external"
+	x264c "github.com/sergystepanov/x264-go/v2/x264c/legacy"
 )
 
 // Logging constants.
@@ -84,9 +85,8 @@ func NewEncoder(w io.Writer, opts *Options) (e *Encoder, err error) {
 
 	param.IWidth = int32(e.opts.Width)
 	param.IHeight = int32(e.opts.Height)
-	param.ICsp = e.csp
 
-	param.IBitdepth = 8
+	param.ICsp = e.csp
 	param.BVfrInput = 0
 	param.BRepeatHeaders = 1
 	param.BAnnexb = 1
@@ -98,7 +98,7 @@ func NewEncoder(w io.Writer, opts *Options) (e *Encoder, err error) {
 		param.IFpsDen = 1
 
 		param.IKeyintMax = int32(e.opts.FrameRate)
-		//param.BIntraRefresh = 1
+		param.BIntraRefresh = 1
 	}
 
 	if e.opts.Profile != "" {
@@ -111,20 +111,18 @@ func NewEncoder(w io.Writer, opts *Options) (e *Encoder, err error) {
 
 	// Allocate on create instead while encoding
 	var picIn x264c.Picture
-	x264c.PictureInit(&picIn)
-	//ret := x264c.PictureAlloc(&picIn, e.csp, int32(e.opts.Width), int32(e.opts.Height))
-	//if ret < 0 {
-	//err = fmt.Errorf("x264: cannot allocate picture")
-	//return
-	//}
-
+	ret := x264c.PictureAlloc(&picIn, e.csp, int32(e.opts.Width), int32(e.opts.Height))
+	if ret < 0 {
+		err = fmt.Errorf("x264: cannot allocate picture")
+		return
+	}
 	e.picIn = picIn
-	//defer func() {
-	//// Cleanup if intialization fail
-	//if err != nil {
-	//x264c.PictureClean(&picIn)
-	//}
-	//}()
+	defer func() {
+		// Cleanup if intialization fail
+		if err != nil {
+			x264c.PictureClean(&picIn)
+		}
+	}()
 
 	e.e = x264c.EncoderOpen(&param)
 	if e.e == nil {
@@ -132,7 +130,7 @@ func NewEncoder(w io.Writer, opts *Options) (e *Encoder, err error) {
 		return
 	}
 
-	ret := x264c.EncoderHeaders(e.e, e.nals, &e.nnals)
+	ret = x264c.EncoderHeaders(e.e, e.nals, &e.nnals)
 	if ret < 0 {
 		err = fmt.Errorf("x264: cannot encode headers")
 		return
@@ -161,20 +159,7 @@ func (e *Encoder) Encode(im image.Image) (err error) {
 	e.img.ToYCbCr(im)
 
 	picIn := e.picIn
-
-	picIn.Img.ICsp = e.csp
-
-	picIn.Img.IPlane = 3
-	picIn.Img.IStride[0] = int32(e.opts.Width)
-	picIn.Img.IStride[1] = int32(e.opts.Width) / 2
-	picIn.Img.IStride[2] = int32(e.opts.Width) / 2
-
-	picIn.Img.Plane[0] = C.CBytes(e.img.Y)
-	picIn.Img.Plane[1] = C.CBytes(e.img.Cb)
-	picIn.Img.Plane[2] = C.CBytes(e.img.Cr)
-
-	//e.img.CopyToCPointer(picIn.Img.Plane[0], picIn.Img.Plane[1], picIn.Img.Plane[2])
-
+	e.img.CopyToCPointer(picIn.Img.Plane[0], picIn.Img.Plane[1], picIn.Img.Plane[2])
 	picIn.IPts = e.pts
 	e.pts++
 

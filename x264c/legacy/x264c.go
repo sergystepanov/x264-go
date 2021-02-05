@@ -1,5 +1,5 @@
 // Package x264c implements cgo bindings for [x264](https://www.videolan.org/developers/x264.html) library.
-package x264c
+package legacy
 
 /*
 #include "stdint.h"

@@ -1,4 +1,4 @@
-package x264
+package color
 
 import (
 	"image"

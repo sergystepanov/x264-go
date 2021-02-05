@@ -1,19 +1,21 @@
 package main
 
 import (
-	"bytes"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/signal"
 	"syscall"
 
-	"github.com/gen2brain/x264-go"
 	"github.com/kbinani/screenshot"
+	"github.com/sergystepanov/x264-go/v2"
 )
 
 func main() {
-	buf := bytes.NewBuffer(make([]byte, 0))
+	file, err := os.Create("screen.264")
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "%s\n", err.Error())
+		os.Exit(1)
+	}
 
 	bounds := screenshot.GetDisplayBounds(0)
 
@@ -23,11 +25,11 @@ func main() {
 		FrameRate: 10,
 		Tune:      "zerolatency",
 		Preset:    "veryfast",
-		Profile:   "baseline",
+		Profile:   "high",
 		LogLevel:  x264.LogDebug,
 	}
 
-	enc, err := x264.NewEncoder(buf, opts)
+	enc, err := x264.NewEncoder(file, opts)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "%s\n", err.Error())
 		os.Exit(1)
@@ -43,7 +45,7 @@ func main() {
 		case <-s:
 			enc.Flush()
 
-			err = ioutil.WriteFile("screen.264", buf.Bytes(), 0644)
+			err = file.Close()
 			if err != nil {
 				fmt.Fprintf(os.Stderr, "%s\n", err.Error())
 				os.Exit(1)

@@ -1,6 +1,4 @@
-// +build extlib
-
-package x264c
+package external
 
 /*
 #cgo android LDFLAGS: -lx264 -lm

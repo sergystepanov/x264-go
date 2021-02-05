@@ -1,20 +1,18 @@
-## x264-go
-[![TravisCI Build Status](https://travis-ci.org/gen2brain/x264-go.svg?branch=master)](https://travis-ci.org/gen2brain/x264-go) 
-[![AppVeyor Build Status](https://ci.appveyor.com/api/projects/status/wfkqlac5ffwk5xgb?svg=true)](https://ci.appveyor.com/project/gen2brain/x264-go)
-[![GoDoc](https://godoc.org/github.com/gen2brain/x264-go?status.svg)](https://godoc.org/github.com/gen2brain/x264-go) 
-[![Go Report Card](https://goreportcard.com/badge/github.com/gen2brain/x264-go?branch=master)](https://goreportcard.com/report/github.com/gen2brain/x264-go) 
+## x264-go/v2
 
-`x264-go` provides H.264/MPEG-4 AVC codec encoder based on [x264](https://www.videolan.org/developers/x264.html) library.
+`x264-go/v2` provides H.264/MPEG-4 AVC codec encoder based on [x264](https://www.videolan.org/developers/x264.html) library and
+original gen2brain/x264-go wrapper.
 
-C source code is included in package. If you want to use external shared/static library (i.e. built with asm and/or OpenCL) use `-tags extlib`.
+By default it will use installed in the system shared/static library.
+If toy want to use old C source code included in the package then build with `-tags legacy`.
 
 ### Installation
 
-    go get -u github.com/gen2brain/x264-go
+    go get -u github.com/sergystepanov/x264-go/v2
 
 ### Examples
 
-See [screengrab](https://github.com/gen2brain/x264-go/blob/master/examples/screengrab/screengrab.go) example.
+See [screengrab](examples/screengrab/screengrab.go) example.
 
 ### Usage
 
@@ -27,7 +25,7 @@ import (
 	"image/color"
 	"image/draw"
 
-	"github.com/gen2brain/x264-go"
+	"github.com/sergystepanov/x264-go/v2"
 )
 
 func main() {
@@ -71,7 +69,3 @@ func main() {
 	}
 }
 ```
-
-## More
-
-For AAC encoder see [aac-go](https://github.com/gen2brain/aac-go).
