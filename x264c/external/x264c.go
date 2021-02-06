@@ -159,11 +159,9 @@ const (
 	X264LogInfo    = 2
 	X264LogDebug   = 3
 
-	// Threading.
-	// Automatically select optimal number of threads.
-	ThreadsAuto = 0
-	// Automatically select optimal lookahead thread buffer size
-	SyncLookaheadAuto = -1
+	/* Threading */
+	X264ThreadsAuto       = 0  /* Automatically select optimal number of threads */
+	X264SyncLookaheadAuto = -1 /* Automatically select optimal lookahead thread buffer size */
 
 	// HRD
 	NalHrdNone = 0
