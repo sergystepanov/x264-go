@@ -163,10 +163,10 @@ const (
 	X264ThreadsAuto       = 0  /* Automatically select optimal number of threads */
 	X264SyncLookaheadAuto = -1 /* Automatically select optimal lookahead thread buffer size */
 
-	// HRD
-	NalHrdNone = 0
-	NalHrdVbr  = 1
-	NalHrdCbr  = 2
+	/* HRD */
+	X264NalHrdNone = 0
+	X264NalHrdVbr  = 1
+	X264NalHrdCbr  = 2
 
 	ParamBadName  = -1
 	ParamBadValue = -2
