@@ -68,37 +68,43 @@ const (
 	X264AnalysePsub8x8   uint = 0x0020 /* Analyse p8x4, p4x8, p4x4 */
 	X264AnalyseBsub16x16 uint = 0x0100 /* Analyse b16x8, b8x16 and b8x8 */
 
-	DirectPredNone       = 0
-	DirectPredSpatial    = 1
-	DirectPredTemporal   = 2
-	DirectPredAuto       = 3
-	MeDia                = 0
-	MeHex                = 1
-	MeUmh                = 2
-	MeEsa                = 3
-	MeTesa               = 4
-	CqmFlat              = 0
-	CqmJvt               = 1
-	CqmCustom            = 2
-	RcCqp                = 0
-	RcCrf                = 1
-	RcAbr                = 2
-	QpAuto               = 0
-	AqNone               = 0
-	AqVariance           = 1
-	AqAutovariance       = 2
-	AqAutovarianceBiased = 3
-	BAdaptNone           = 0
-	BAdaptFast           = 1
-	BAdaptTrellis        = 2
-	WeightpNone          = 0
-	WeightpSimple        = 1
-	WeightpSmart         = 2
-	BPyramidNone         = 0
-	BPyramidStrict       = 1
-	BPyramidNormal       = 2
-	KeyintMinAuto        = 0
-	KeyintMaxInfinite    = 1 << 30
+	X264DirectPredNone       = 0
+	X264DirectPredSpatial    = 1
+	X264DirectPredTemporal   = 2
+	X264DirectPredAuto       = 3
+	X264MeDia                = 0
+	X264MeHex                = 1
+	X264MeUmh                = 2
+	X264MeEsa                = 3
+	X264MeTesa               = 4
+	X264CqmFlat              = 0
+	X264CqmJvt               = 1
+	X264CqmCustom            = 2
+	X264RcCqp                = 0
+	X264RcCrf                = 1
+	X264RcAbr                = 2
+	X264QpAuto               = 0
+	X264AqNone               = 0
+	X264AqVariance           = 1
+	X264AqAutovariance       = 2
+	X264AqAutovarianceBiased = 3
+	X264BAdaptNone           = 0
+	X264BAdaptFast           = 1
+	X264BAdaptTrellis        = 2
+	X264WeightpNone          = 0
+	X264WeightpSimple        = 1
+	X264WeightpSmart         = 2
+	X264BPyramidNone         = 0
+	X264BPyramidStrict       = 1
+	X264BPyramidNormal       = 2
+	X264KeyintMinAuto        = 0
+	X264KeyintMaxInfinite    = 1 << 30
+
+	/* AVC-Intra flavors */
+	X264AvcintraFlavorPanasonic = 0
+	X264AvcintraFlavorSony      = 1
+
+	/* !to add missing names */
 
 	// Colorspace type.
 	CspMask = 0x00ff
@@ -529,7 +535,7 @@ type Param struct {
 	// Filename (in UTF-8) of CQM file, JM format.
 	PszCqmFile *int8
 
-	// Used only if i_cqm_preset == X264_CQM_CUSTOM.
+	// Used only if i_cqm_preset == X264CqmCustom.
 	Cqm4iy [16]byte
 	Cqm4py [16]byte
 	Cqm4ic [16]byte
@@ -699,7 +705,7 @@ type Picture struct {
 	// In: force picture type (if not auto).
 	// Out: type of the picture encoded.
 	IType int32
-	// In: force quantizer for != X264_QP_AUTO.
+	// In: force quantizer for != X264QpAuto.
 	IQpplus1 int32
 	// In: pic_struct, for pulldown/doubling/etc...used only if b_pic_struct=1.
 	// Out: pic_struct element associated with frame.
