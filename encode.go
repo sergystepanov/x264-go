@@ -52,7 +52,7 @@ type Encoder struct {
 	pts int64
 
 	nnals int32
-	nals  []*x264c.Nal
+	nals  []*x264c.X264NalT
 
 	picIn x264c.Picture
 }
@@ -65,9 +65,9 @@ func NewEncoder(w io.Writer, opts *Options) (e *Encoder, err error) {
 	e.pts = 0
 	e.opts = opts
 
-	e.csp = x264c.CspI420
+	e.csp = x264c.X264CspI420
 
-	e.nals = make([]*x264c.Nal, 3)
+	e.nals = make([]*x264c.X264NalT, 3)
 	e.img = color.NewYCbCr(image.Rect(0, 0, e.opts.Width, e.opts.Height))
 
 	param := x264c.Param{}

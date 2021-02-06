@@ -37,6 +37,30 @@ const (
 	NalPriorityHighest    = 3
 )
 
+/* The data within the payload is already NAL-encapsulated; the ref_idc and type
+ * are merely in the struct for easy access by the calling application.
+ * All data returned in an x264_nal_t, including the data in p_payload, is no longer
+ * valid after the next call to x264_encoder_encode.  Thus it must be used or copied
+ * before calling x264_encoder_encode or x264_encoder_headers again. */
+type X264NalT struct {
+	IRefIdc        C.int /* nal_priority_e */
+	IType          C.int /* nal_unit_type_e */
+	BLongStartcode C.int
+	IFirstMb       C.int /* If this NAL is a slice, the index of the first MB in the slice. */
+	ILastMb        C.int /* If this NAL is a slice, the index of the last MB in the slice. */
+
+	/* Size of payload (including any padding) in bytes. */
+	IPayload C.int
+	/* If param->b_annexb is set, Annex-B bytestream with startcode.
+	 * Otherwise, startcode is replaced with a 4-byte size.
+	 * This size is the size used in mp4/similar muxing; it is equal to i_payload-4 */
+	/* C.uint8_t */
+	PPayload unsafe.Pointer
+
+	/* Size of padding in bytes. */
+	IPadding C.int
+}
+
 /****************************************************************************
  * Encoder parameters
  ****************************************************************************/
@@ -219,33 +243,8 @@ func (t *T) cptr() *C.x264_t {
 	return (*C.x264_t)(unsafe.Pointer(t))
 }
 
-// Nal type.
-// The data within the payload is already NAL-encapsulated; the ref_idc and type are merely in the struct for easy access by the calling application.
-// All data returned in an Nal, including the data in PPayload, is no longer valid after the next call to EncoderEncode.
-// Thus it must be used or copied before calling EncoderEncode or EncoderHeaders again.
-type Nal struct {
-	// NalPriority.
-	IRefIdc int32
-	// NalUnitType.
-	IType int32
-	// Start code.
-	BLongStartcode int32
-	// If this NAL is a slice, the index of the first MB in the slice.
-	IFirstMb int32
-	// If this NAL is a slice, the index of the last MB in the slice.
-	ILastMb int32
-	// Size of payload (including any padding) in bytes.
-	IPayload int32
-	// If param.BAnnexb is set, Annex-B bytestream with startcode.
-	// Otherwise, startcode is replaced with a 4-byte size.
-	// This size is the size used in mp4/similar muxing; it is equal to IPayload-4.
-	PPayload unsafe.Pointer
-	// Size of padding in bytes.
-	IPadding int32
-}
-
 // cptr return C pointer.
-func (n *Nal) cptr() *C.x264_nal_t {
+func (n *X264NalT) cptr() *C.x264_nal_t {
 	return (*C.x264_nal_t)(unsafe.Pointer(n))
 }
 
@@ -731,11 +730,10 @@ func (p *Picture) cptr() *C.x264_picture_t {
 }
 
 // NalEncode - encode Nal.
-func NalEncode(h *T, dst []byte, nal *Nal) {
+func NalEncode(h *T, dst []byte, nal *X264NalT) {
 	ch := h.cptr()
 	cdst := (*C.uint8_t)(unsafe.Pointer(&dst[0]))
 	cnal := nal.cptr()
-
 	C.x264_nal_encode(ch, cdst, cnal)
 }
 
@@ -865,7 +863,7 @@ func EncoderParameters(enc *T, param *Param) {
 
 // EncoderHeaders - return the SPS and PPS that will be used for the whole stream.
 // Returns the number of bytes in the returned NALs or negative on error.
-func EncoderHeaders(enc *T, ppNal []*Nal, piNal *int32) int32 {
+func EncoderHeaders(enc *T, ppNal []*X264NalT, piNal *int32) int32 {
 	cenc := enc.cptr()
 
 	cppNal := (**C.x264_nal_t)(unsafe.Pointer(&ppNal[0]))
@@ -878,7 +876,7 @@ func EncoderHeaders(enc *T, ppNal []*Nal, piNal *int32) int32 {
 
 // EncoderEncode - encode one picture.
 // Returns the number of bytes in the returned NALs, negative on error and zero if no NAL units returned.
-func EncoderEncode(enc *T, ppNal []*Nal, piNal *int32, picIn *Picture, picOut *Picture) int32 {
+func EncoderEncode(enc *T, ppNal []*X264NalT, piNal *int32, picIn *Picture, picOut *Picture) int32 {
 	cenc := enc.cptr()
 
 	cppNal := (**C.x264_nal_t)(unsafe.Pointer(&ppNal[0]))
