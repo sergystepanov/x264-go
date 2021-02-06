@@ -167,12 +167,6 @@ const (
 	X264NalHrdNone = 0
 	X264NalHrdVbr  = 1
 	X264NalHrdCbr  = 2
-
-	ParamBadName  = -1
-	ParamBadValue = -2
-
-	// MbinfoConstant.
-	MbinfoConstant = 1 << 0
 )
 
 // NalUnitType enumeration.
