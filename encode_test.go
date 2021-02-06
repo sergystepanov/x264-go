@@ -2,7 +2,6 @@ package x264
 
 import (
 	"bytes"
-	color2 "github.com/sergystepanov/x264-go/v2/x264c/color"
 	"image"
 	"image/color"
 	"image/draw"
@@ -10,6 +9,8 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+
+	color2 "github.com/sergystepanov/x264-go/v2/x264c/color"
 )
 
 func TestEncode(t *testing.T) {
