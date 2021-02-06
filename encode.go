@@ -6,10 +6,10 @@ import "C"
 
 import (
 	"fmt"
-	"github.com/sergystepanov/x264-go/v2/x264c/color"
 	"image"
 	"io"
 
+	"github.com/sergystepanov/x264-go/v2/x264c/color"
 	x264c "github.com/sergystepanov/x264-go/v2/x264c/external"
 )
 
@@ -70,7 +70,7 @@ func NewEncoder(w io.Writer, opts *Options) (e *Encoder, err error) {
 	e.nals = make([]*x264c.X264NalT, 3)
 	e.img = color.NewYCbCr(image.Rect(0, 0, e.opts.Width, e.opts.Height))
 
-	param := x264c.Param{}
+	param := x264c.X264ParamT{}
 
 	if e.opts.Preset != "" && e.opts.Profile != "" {
 		ret := x264c.ParamDefaultPreset(&param, e.opts.Preset, e.opts.Tune)
@@ -82,24 +82,34 @@ func NewEncoder(w io.Writer, opts *Options) (e *Encoder, err error) {
 		x264c.ParamDefault(&param)
 	}
 
+	//param.IThreads = 1
+	param.IBitdepth = 8
+	param.ICsp = e.csp
 	param.IWidth = int32(e.opts.Width)
 	param.IHeight = int32(e.opts.Height)
-	param.ICsp = e.csp
-
-	param.IBitdepth = 8
 	param.BVfrInput = 0
 	param.BRepeatHeaders = 1
 	param.BAnnexb = 1
-
 	param.ILogLevel = e.opts.LogLevel
+	param.IKeyintMax = 30
+	param.BIntraRefresh = 1
+	param.IFpsNum = uint32(e.opts.FrameRate)
+	param.IFpsDen = 1
 
-	if e.opts.FrameRate > 0 {
-		param.IFpsNum = uint32(e.opts.FrameRate)
-		param.IFpsDen = 1
+	param.Rc.IRcMethod = x264c.X264RcCrf
+	param.Rc.FRfConstant = 28
 
-		param.IKeyintMax = int32(e.opts.FrameRate)
-		//param.BIntraRefresh = 1
-	}
+	//param.BVfrInput = 1
+	//param.ITimebaseNum = 1
+	//param.ITimebaseDen = 90000
+
+	//if e.opts.FrameRate > 0 {
+	//	param.IFpsNum = uint32(e.opts.FrameRate)
+	//	param.IFpsDen = 1
+	//
+	//	param.IKeyintMax = int32(e.opts.FrameRate)
+	//	//param.BIntraRefresh = 1
+	//}
 
 	if e.opts.Profile != "" {
 		ret := x264c.ParamApplyProfile(&param, e.opts.Profile)

@@ -43,14 +43,14 @@ const (
  * valid after the next call to x264_encoder_encode.  Thus it must be used or copied
  * before calling x264_encoder_encode or x264_encoder_headers again. */
 type X264NalT struct {
-	IRefIdc        C.int /* nal_priority_e */
-	IType          C.int /* nal_unit_type_e */
-	BLongStartcode C.int
-	IFirstMb       C.int /* If this NAL is a slice, the index of the first MB in the slice. */
-	ILastMb        C.int /* If this NAL is a slice, the index of the last MB in the slice. */
+	IRefIdc        int32 /* nal_priority_e */
+	IType          int32 /* nal_unit_type_e */
+	BLongStartcode int32
+	IFirstMb       int32 /* If this NAL is a slice, the index of the first MB in the slice. */
+	ILastMb        int32 /* If this NAL is a slice, the index of the last MB in the slice. */
 
 	/* Size of payload (including any padding) in bytes. */
-	IPayload C.int
+	IPayload int32
 	/* If param->b_annexb is set, Annex-B bytestream with startcode.
 	 * Otherwise, startcode is replaced with a 4-byte size.
 	 * This size is the size used in mp4/similar muxing; it is equal to i_payload-4 */
@@ -58,7 +58,7 @@ type X264NalT struct {
 	PPayload unsafe.Pointer
 
 	/* Size of padding in bytes. */
-	IPadding C.int
+	IPadding int32
 }
 
 /****************************************************************************
@@ -68,57 +68,57 @@ type X264NalT struct {
 
 const (
 	/* x86 */
-	X264CpuMmx    uint = 1 << 0
-	X264CpuMmx2   uint = 1 << 1 /* MMX2 aka MMXEXT aka ISSE */
-	X264CpuMmxext      = X264CpuMmx2
-	X264CpuSse    uint = 1 << 2
-	X264CpuSse2   uint = 1 << 3
-	X264CpuLzcnt  uint = 1 << 4
-	X264CpuSse3   uint = 1 << 5
-	X264CpuSsse3  uint = 1 << 6
-	X264CpuSse4   uint = 1 << 7  /* SSE4.1 */
-	X264CpuSse42  uint = 1 << 8  /* SSE4.2 */
-	X264CpuAvx    uint = 1 << 9  /* Requires OS support even if YMM registers aren't used */
-	X264CpuXop    uint = 1 << 10 /* AMD XOP */
-	X264CpuFma4   uint = 1 << 11 /* AMD FMA4 */
-	X264CpuFma3   uint = 1 << 12
-	X264CpuBmi1   uint = 1 << 13
-	X264CpuBmi2   uint = 1 << 14
-	X264CpuAvx2   uint = 1 << 15
-	X264CpuAvx512 uint = 1 << 16 /* AVX-512 {F, CD, BW, DQ, VL}, requires OS support */
+	X264CpuMmx    uint32 = 1 << 0
+	X264CpuMmx2   uint32 = 1 << 1 /* MMX2 aka MMXEXT aka ISSE */
+	X264CpuMmxext        = X264CpuMmx2
+	X264CpuSse    uint32 = 1 << 2
+	X264CpuSse2   uint32 = 1 << 3
+	X264CpuLzcnt  uint32 = 1 << 4
+	X264CpuSse3   uint32 = 1 << 5
+	X264CpuSsse3  uint32 = 1 << 6
+	X264CpuSse4   uint32 = 1 << 7  /* SSE4.1 */
+	X264CpuSse42  uint32 = 1 << 8  /* SSE4.2 */
+	X264CpuAvx    uint32 = 1 << 9  /* Requires OS support even if YMM registers aren't used */
+	X264CpuXop    uint32 = 1 << 10 /* AMD XOP */
+	X264CpuFma4   uint32 = 1 << 11 /* AMD FMA4 */
+	X264CpuFma3   uint32 = 1 << 12
+	X264CpuBmi1   uint32 = 1 << 13
+	X264CpuBmi2   uint32 = 1 << 14
+	X264CpuAvx2   uint32 = 1 << 15
+	X264CpuAvx512 uint32 = 1 << 16 /* AVX-512 {F, CD, BW, DQ, VL}, requires OS support */
 	/* x86 modifiers */
-	X264CpuCacheline32 uint = 1 << 17 /* avoid memory loads that span the border between two cachelines */
-	X264CpuCacheline64 uint = 1 << 18 /* 32/64 is the size of a cacheline in bytes */
-	X264CpuSse2IsSlow  uint = 1 << 19 /* avoid most SSE2 functions on Athlon64 */
-	X264CpuSse2IsFast  uint = 1 << 20 /* a few functions are only faster on Core2 and Phenom */
-	X264CpuSlowShuffle uint = 1 << 21 /* The Conroe has a slow shuffle unit (relative to overall SSE performance) */
-	X264CpuStackMod4   uint = 1 << 22 /* if stack is only mod4 and not mod16 */
-	X264CpuSlowAtom    uint = 1 << 23 /* The Atom is terrible: slow SSE unaligned loads, slow
+	X264CpuCacheline32 uint32 = 1 << 17 /* avoid memory loads that span the border between two cachelines */
+	X264CpuCacheline64 uint32 = 1 << 18 /* 32/64 is the size of a cacheline in bytes */
+	X264CpuSse2IsSlow  uint32 = 1 << 19 /* avoid most SSE2 functions on Athlon64 */
+	X264CpuSse2IsFast  uint32 = 1 << 20 /* a few functions are only faster on Core2 and Phenom */
+	X264CpuSlowShuffle uint32 = 1 << 21 /* The Conroe has a slow shuffle unit (relative to overall SSE performance) */
+	X264CpuStackMod4   uint32 = 1 << 22 /* if stack is only mod4 and not mod16 */
+	X264CpuSlowAtom    uint32 = 1 << 23 /* The Atom is terrible: slow SSE unaligned loads, slow
 	 * SIMD multiplies, slow SIMD variable shifts, slow pshufb,
 	 * cacheline split penalties -- gather everything here that
 	 * isn't shared by other CPUs to avoid making half a dozen
 	 * new SLOW flags. */
-	X264CpuSlowPshufb  uint = 1 << 24 /* such as on the Intel Atom */
-	X264CpuSlowPalignr uint = 1 << 25 /* such as on the AMD Bobcat */
+	X264CpuSlowPshufb  uint32 = 1 << 24 /* such as on the Intel Atom */
+	X264CpuSlowPalignr uint32 = 1 << 25 /* such as on the AMD Bobcat */
 
 	/* PowerPC */
-	X264CpuAltivec uint = 0x0000001
+	X264CpuAltivec uint32 = 0x0000001
 
 	/* ARM and AArch64 */
-	X264CpuArmv6       uint = 0x0000001
-	X264CpuNeon        uint = 0x0000002 /* ARM NEON */
-	X264CpuFastNeonMrc uint = 0x0000004 /* Transfer from NEON to ARM register is fast (Cortex-A9) */
-	X264CpuArmv8       uint = 0x0000008
+	X264CpuArmv6       uint32 = 0x0000001
+	X264CpuNeon        uint32 = 0x0000002 /* ARM NEON */
+	X264CpuFastNeonMrc uint32 = 0x0000004 /* Transfer from NEON to ARM register is fast (Cortex-A9) */
+	X264CpuArmv8       uint32 = 0x0000008
 
 	/* MIPS */
-	X264CpuMsa uint = 0x0000001 /* MIPS MSA */
+	X264CpuMsa uint32 = 0x0000001 /* MIPS MSA */
 
 	/* Analyse flags */
-	X264AnalyseI4x4      uint = 0x0001 /* Analyse i4x4 */
-	X264AnalyseI8x8      uint = 0x0002 /* Analyse i8x8 (requires 8x8 transform) */
-	X264AnalysePsub16x16 uint = 0x0010 /* Analyse p16x8, p8x16 and p8x8 */
-	X264AnalysePsub8x8   uint = 0x0020 /* Analyse p8x4, p4x8, p4x4 */
-	X264AnalyseBsub16x16 uint = 0x0100 /* Analyse b16x8, b8x16 and b8x8 */
+	X264AnalyseI4x4      uint32 = 0x0001 /* Analyse i4x4 */
+	X264AnalyseI8x8      uint32 = 0x0002 /* Analyse i8x8 (requires 8x8 transform) */
+	X264AnalysePsub16x16 uint32 = 0x0010 /* Analyse p16x8, p8x16 and p8x8 */
+	X264AnalysePsub8x8   uint32 = 0x0020 /* Analyse p8x4, p4x8, p4x4 */
+	X264AnalyseBsub16x16 uint32 = 0x0100 /* Analyse b16x8, b8x16 and b8x8 */
 
 	X264DirectPredNone       = 0
 	X264DirectPredSpatial    = 1
@@ -221,297 +221,55 @@ const (
 	X264NalHrdCbr  = 2
 )
 
-// PicStruct enumeration.
-const (
-	PicStructAuto        = int32(iota) // automatically decide (default)
-	PicStructProgressive               // progressive frame
+type X264ParamT struct {
+	/* CPU flags */
+	Cpu               uint32
+	IThreads          int32 /* encode multiple frames in parallel */
+	ILookaheadThreads int32 /* multiple threads for lookahead analysis */
+	BSlicedThreads    int32 /* Whether to use slice-based threading. */
+	BDeterministic    int32 /* whether to allow non-deterministic optimizations when threaded */
+	BCpuIndependent   int32 /* force canonical behavior rather than cpu-dependent optimal algorithms */
+	ISyncLookahead    int32 /* threaded lookahead buffer */
 
-	// "TOP" and "BOTTOM" are not supported in x264 (PAFF only)
-	PicStructTopBottom       // top field followed by bottom
-	PicStructBottomTop       // bottom field followed by top
-	PicStructTopBottomTop    // top field, bottom field, top field repeated
-	PicStructBottomTopBottom // bottom field, top field, bottom field repeated
-	PicStructDouble          // double frame
-	PicStructTriple          // triple frame
-)
+	/* Video Properties */
+	IWidth      int32
+	IHeight     int32
+	ICsp        int32 /* CSP of encoded bitstream */
+	IBitdepth   int32
+	ILevelIdc   int32
+	IFrameTotal int32 /* number of frames to encode if known, else 0 */
 
-// T opaque handler for encoder.
-type T struct{}
-
-// cptr return C pointer.
-func (t *T) cptr() *C.x264_t {
-	return (*C.x264_t)(unsafe.Pointer(t))
-}
-
-// cptr return C pointer.
-func (n *X264NalT) cptr() *C.x264_nal_t {
-	return (*C.x264_nal_t)(unsafe.Pointer(n))
-}
-
-// Vui type.
-type Vui struct {
-	// They will be reduced to be 0 < x <= 65535 and prime.
-	ISarHeight int32
-	ISarWidth  int32
-
-	// 0=undef, 1=no overscan, 2=overscan.
-	IOverscan int32
-
-	// See h264 annex E for the values of the following.
-	IVidformat int32
-	BFullrange int32
-	IColorprim int32
-	ITransfer  int32
-	IColmatrix int32
-
-	// Both top & bottom.
-	IChromaLoc int32
-}
-
-// Analyse (encoder analyser parameters) type.
-type Analyse struct {
-	// Intra partitions.
-	Intra uint32
-	// Inter partitions.
-	Inter uint32
-
-	BTransform8x8 int32
-	// Weighting for P-frames.
-	IWeightedPred int32
-	// Implicit weighting for B-frames.
-	BWeightedBipred int32
-	// Spatial vs temporal mv prediction.
-	IDirectMvPred   int32
-	IChromaQpOffset int32
-
-	// Motion estimation algorithm to use (X264_ME_*).
-	IMeMethod int32
-	// Integer pixel motion estimation search range (from predicted mv).
-	IMeRange int32
-	// Maximum length of a mv (in pixels). -1 = auto, based on level.
-	IMvRange int32
-	// Minimum space between threads. -1 = auto, based on number of threads.
-	IMvRangeThread int32
-	// Subpixel motion estimation quality.
-	ISubpelRefine int32
-	// Chroma ME for subpel and mode decision in P-frames.
-	BChromaMe int32
-	// Allow each mb partition to have its own reference number.
-	BMixedReferences int32
-	// Trellis RD quantization.
-	ITrellis int32
-	// Early SKIP detection on P-frames.
-	BFastPskip int32
-	// Transform coefficient thresholding on P-frames.
-	BDctDecimate int32
-	// Adaptive pseudo-deadzone.
-	INoiseReduction int32
-	// Psy RD strength.
-	FPsyRd float32
-	// Psy trellis strength.
-	FPsyTrellis float32
-	// Toggle all psy optimizations.
-	BPsy int32
-
-	// Use input MbInfo data in Picture
-	BMbInfo int32
-	// Update the values in mb_info according to the results of encoding.
-	BMbInfoUpdate int32
-
-	// The deadzone size that will be used in luma quantization {inter, intra}
-	ILumaDeadzone [2]int32
-
-	// compute and print PSNR stats
-	BPsnr int32
-	// compute and print SSIM stats
-	BSsim int32
-}
-
-// Rc (rate control parameters) type.
-type Rc struct {
-	// X264_RC_*
-	IRcMethod int32
-
-	// 0 to (51 + 6*(x264_bit_depth-8)). 0=lossless.
-	IQpConstant int32
-	// Min allowed QP value.
-	IQpMin int32
-	// Max allowed QP value.
-	IQpMax int32
-	// Max QP step between frames.
-	IQpStep int32
-
-	IBitrate int32
-	// 1pass VBR, nominal QP.
-	FRfConstant float32
-	// In CRF mode, maximum CRF as caused by VBV.
-	FRfConstantMax float32
-	FRateTolerance float32
-	IVbvMaxBitrate int32
-	IVbvBufferSize int32
-	// <=1: fraction of buffer_size. >1: kbit.
-	FVbvBufferInit float32
-	FIpFactor      float32
-	FPbFactor      float32
-
-	// VBV filler: force CBR VBV and use filler bytes to ensure hard-CBR. Implied by NAL-HRD CBR.
-	BFiller int32
-
-	// Psy adaptive QP. (X264_AQ_*).
-	IAqMode     int32
-	FAqStrength float32
-	// Macroblock-tree ratecontrol.
-	BMbTree    int32
-	ILookahead int32
-
-	// 2pass
-	// Enable stat writing in psz_stat_out.
-	BStatWrite int32
-	// Output filename (in UTF-8) of the 2pass stats file.
-	PszStatOut *int8
-	// Read stat from psz_stat_in and use it.
-	BStatRead int32
-	_         [4]byte
-	// Input filename (in UTF-8) of the 2pass stats file.
-	PszStatIn *int8
-
-	// 2pass params (same as ffmpeg ones).
-	// 0.0 => cbr, 1.0 => constant qp.
-	FQcompress float32
-	// Temporally blur quants.
-	FQblur float32
-	// Temporally blur complexity.
-	FComplexityBlur float32
-	_               [4]byte
-	// Ratecontrol overrides.
-	Zones *Zone
-	// Number of Zone's.
-	IZones int32
-	_      [4]byte
-	// Alternate method of specifying zones.
-	PszZones *int8
-}
-
-// CropRect (cropping rectangle parameters) type.
-// Added to those implicitly defined by non-mod16 video resolutions.
-type CropRect struct {
-	Left   uint32
-	Top    uint32
-	Right  uint32
-	Bottom uint32
-}
-
-// Zone type.
-// Zones: override ratecontrol or other options for specific sections of the video.
-// See EncoderReconfig() for which options can be changed.
-// If zones overlap, whichever comes later in the list takes precedence.
-type Zone struct {
-	// Range of frame numbers.
-	IStart int32
-	// Range of frame numbers.
-	IEnd int32
-	// Whether to use qp vs bitrate factor.
-	BForceQp       int32
-	IQp            int32
-	FBitrateFactor float32
-	_              [4]byte
-	Param          *Param
-}
-
-// Level (H.264 level restriction information) type.
-type Level struct {
-	LevelIdc byte
-	_        [3]byte
-	// Max macroblock processing rate (macroblocks/sec).
-	Mbps uint32
-	// Max frame size (macroblocks).
-	FrameSize uint32
-	// Max decoded picture buffer (mbs).
-	Dpb uint32
-	// Max bitrate (kbit/sec).
-	Bitrate uint32
-	// Max vbv buffer (kbit).
-	Cpb uint32
-	// Max vertical mv component range (pixels).
-	MvRange uint16
-	// Max mvs per 2 consecutive mbs.
-	MvsPer2mb byte
-	SliceRate byte
-	// Min compression ratio.
-	Mincr byte
-	// Limit bipred to >=8x8.
-	Bipred8x8 byte
-	// Limit b_direct to >=8x8.
-	Direct8x8 byte
-	// Forbid interlacing.
-	FrameOnly byte
-}
-
-// Param type.
-type Param struct {
-	// CPU flags.
-	Cpu uint32
-	// Encode multiple frames in parallel.
-	IThreads int32
-	// Multiple threads for lookahead analysis.
-	ILookaheadThreads int32
-	// Whether to use slice-based threading.
-	BSlicedThreads int32
-	// Whether to allow non-deterministic optimizations when threaded.
-	BDeterministic int32
-	// Force canonical behavior rather than cpu-dependent optimal algorithms.
-	BCpuIndependent int32
-	// Threaded lookahead buffer.
-	ISyncLookahead int32
-
-	// Video Properties.
-	IWidth  int32
-	IHeight int32
-	// CSP of encoded bitstream.
-	ICsp      int32
-	IBitdepth int32
-	ILevelIdc int32
-	// Number of frames to encode if known, else 0.
-	IFrameTotal int32
-
-	// NAL HRD.
-	// Uses Buffering and Picture Timing SEIs to signal HRD. The HRD in H.264 was not designed with VFR in mind.
-	// It is therefore not recommendeded to use NAL HRD with VFR.
-	// Furthermore, reconfiguring the VBV (via x264_encoder_reconfig) will currently generate invalid HRD.
+	/* NAL HRD
+	 * Uses Buffering and Picture Timing SEIs to signal HRD
+	 * The HRD in H.264 was not designed with VFR in mind.
+	 * It is therefore not recommendeded to use NAL HRD with VFR.
+	 * Furthermore, reconfiguring the VBV (via x264_encoder_reconfig)
+	 * will currently generate invalid HRD. */
 	INalHrd int32
 
 	Vui Vui
 
-	// Bitstream parameters.
-	// Maximum number of reference frames.
-	IFrameReference int32
-	// Force a DPB size larger than that implied by B-frames and reference frames.
-	// Useful in combination with interactive error resilience.
-	IDpbSize int32
-	// Force an IDR keyframe at this interval.
-	IKeyintMax int32
-	// Scenecuts closer together than this are coded as I, not IDR.
-	IKeyintMin int32
-	// How aggressively to insert extra I frames.
-	IScenecutThreshold int32
-	// Whether or not to use periodic intra refresh instead of IDR frames.
-	BIntraRefresh int32
+	/* Bitstream parameters */
+	IFrameReference int32 /* Maximum number of reference frames */
+	IDpbSize        int32 /* Force a DPB size larger than that implied by B-frames and reference frames.
+	 * Useful in combination with interactive error resilience. */
+	IKeyintMax         int32 /* Force an IDR keyframe at this interval */
+	IKeyintMin         int32 /* Scenecuts closer together than this are coded as I, not IDR. */
+	IScenecutThreshold int32 /* how aggressively to insert extra I frames */
+	BIntraRefresh      int32 /* Whether or not to use periodic intra refresh instead of IDR frames. */
 
-	// How many b-frame between 2 references pictures.
-	IBframe         int32
+	IBframe         int32 /* how many b-frame between 2 references pictures */
 	IBframeAdaptive int32
 	IBframeBias     int32
-	// Keep some B-frames as references: 0=off, 1=strict hierarchical, 2=normal.
-	IBframePyramid int32
-	BOpenGop       int32
-	BBlurayCompat  int32
-	IAvcintraClass int32
+	IBframePyramid  int32 /* Keep some B-frames as references: 0=off, 1=strict hierarchical, 2=normal */
+	BOpenGop        int32
+	BBlurayCompat   int32
+	IAvcintraClass  int32
+	IAvcintraFlavor int32
 
-	BDeblockingFilter int32
-	// [-6, 6] -6 light filter, 6 strong.
-	IDeblockingFilterAlphac0 int32
-	// [-6, 6]  idem.
-	IDeblockingFilterBeta int32
+	BDeblockingFilter        int32
+	IDeblockingFilterAlphac0 int32 /* [-6, 6] -6 light filter, 6 strong */
+	IDeblockingFilterBeta    int32 /* [-6, 6]  idem */
 
 	BCabac        int32
 	ICabacInitIdc int32
@@ -520,35 +278,30 @@ type Param struct {
 	BConstrainedIntra int32
 
 	ICqmPreset int32
-	_          [4]byte
-	// Filename (in UTF-8) of CQM file, JM format.
-	PszCqmFile *int8
+	//_          [4]byte
+	PszCqmFile *int8    /* filename (in UTF-8) of CQM file, JM format */
+	Cqm4iy     [16]byte /* used only if i_cqm_preset == X264_CQM_CUSTOM */
+	Cqm4py     [16]byte
+	Cqm4ic     [16]byte
+	Cqm4pc     [16]byte
+	Cqm8iy     [64]byte
+	Cqm8py     [64]byte
+	Cqm8ic     [64]byte
+	Cqm8pc     [64]byte
 
-	// Used only if i_cqm_preset == X264CqmCustom.
-	Cqm4iy [16]byte
-	Cqm4py [16]byte
-	Cqm4ic [16]byte
-	Cqm4pc [16]byte
-	Cqm8iy [64]byte
-	Cqm8py [64]byte
-	Cqm8ic [64]byte
-	Cqm8pc [64]byte
-
-	// Log.
+	/* Log */
 	PfLog       *[0]byte
 	PLogPrivate unsafe.Pointer
 	ILogLevel   int32
-	// Fully reconstruct frames, even when not necessary for encoding. Implied by psz_dump_yuv.
-	BFullRecon int32
-	// Filename (in UTF-8) for reconstructed frames.
-	PszDumpYuv *int8
+	BFullRecon  int32 /* fully reconstruct frames, even when not necessary for encoding.  Implied by psz_dump_yuv */
+	PszDumpYuv  *int8 /* filename (in UTF-8) for reconstructed frames */
 
-	// Encoder analyser parameters.
+	/* Encoder analyser parameters */
 	Analyse Analyse
 
-	_ [4]byte
+	//_ [4]byte
 
-	// Rate control parameters.
+	/* Rate control parameters */
 	Rc Rc
 
 	// Cropping Rectangle parameters: added to those implicitly defined by non-mod16 video resolutions.
@@ -619,13 +372,191 @@ type Param struct {
 	// Absolute cap on slices per frame; stops applying slice-max-size and slice-max-mbs if this is reached.
 	ISliceCountMax int32
 
-	_           [4]byte
+	//_           [4]byte
 	ParamFree   *[0]byte
 	NaluProcess *[0]byte
 }
 
+type Vui struct {
+	/* they will be reduced to be 0 < x <= 65535 and prime */
+	ISarHeight int32
+	ISarWidth  int32
+
+	IOverscan int32 /* 0=undef, 1=no overscan, 2=overscan */
+
+	/* see h264 annex E for the values of the following */
+	IVidformat int32
+	BFullrange int32
+	IColorprim int32
+	ITransfer  int32
+	IColmatrix int32
+	IChromaLoc int32 /* both top & bottom */
+}
+
+type Analyse struct {
+	Intra uint32 /* intra partitions */
+	Inter uint32 /* inter partitions */
+
+	BTransform8x8   int32
+	IWeightedPred   int32 /* weighting for P-frames */
+	BWeightedBipred int32 /* implicit weighting for B-frames */
+	IDirectMvPred   int32 /* spatial vs temporal mv prediction */
+	IChromaQpOffset int32
+
+	IMeMethod        int32   /* motion estimation algorithm to use (X264_ME_*) */
+	IMeRange         int32   /* integer pixel motion estimation search range (from predicted mv) */
+	IMvRange         int32   /* maximum length of a mv (in pixels). -1 = auto, based on level */
+	IMvRangeThread   int32   /* minimum space between threads. -1 = auto, based on number of threads. */
+	ISubpelRefine    int32   /* subpixel motion estimation quality */
+	BChromaMe        int32   /* chroma ME for subpel and mode decision in P-frames */
+	BMixedReferences int32   /* allow each mb partition to have its own reference number */
+	ITrellis         int32   /* trellis RD quantization */
+	BFastPskip       int32   /* early SKIP detection on P-frames */
+	BDctDecimate     int32   /* transform coefficient thresholding on P-frames */
+	INoiseReduction  int32   /* adaptive pseudo-deadzone */
+	FPsyRd           float32 /* Psy RD strength */
+	FPsyTrellis      float32 /* Psy trellis strength */
+	BPsy             int32   /* Toggle all psy optimizations */
+
+	BMbInfo       int32 /* Use input mb_info data in x264_picture_t */
+	BMbInfoUpdate int32 /* Update the values in mb_info according to the results of encoding. */
+
+	/* the deadzone size that will be used in luma quantization */
+	ILumaDeadzone [2]int32
+
+	BPsnr int32 /* compute and print PSNR stats */
+	BSsim int32 /* compute and print SSIM stats */
+}
+
+type Rc struct {
+	IRcMethod int32 /* X264_RC_* */
+
+	IQpConstant int32 /* 0=lossless */
+	IQpMin      int32 /* min allowed QP value */
+	IQpMax      int32 /* max allowed QP value */
+	IQpStep     int32 /* max QP step between frames */
+
+	IBitrate       int32
+	FRfConstant    float32 /* 1pass VBR, nominal QP */
+	FRfConstantMax float32 /* In CRF mode, maximum CRF as caused by VBV */
+	FRateTolerance float32
+	IVbvMaxBitrate int32
+	IVbvBufferSize int32
+	FVbvBufferInit float32 /* <=1: fraction of buffer_size. >1: kbit */
+	FIpFactor      float32
+	FPbFactor      float32
+
+	/* VBV filler: force CBR VBV and use filler bytes to ensure hard-CBR.
+	 * Implied by NAL-HRD CBR. */
+	BFiller int32
+
+	IAqMode     int32 /* psy adaptive QP. (X264_AQ_*) */
+	FAqStrength float32
+	BMbTree     int32 /* Macroblock-tree ratecontrol. */
+	ILookahead  int32
+
+	/* 2pass */
+	BStatWrite int32 /* Enable stat writing in psz_stat_out */
+	PszStatOut *int8 /* output filename (in UTF-8) of the 2pass stats file */
+	BStatRead  int32 /* Read stat from psz_stat_in and use it */
+	//_         [4]byte
+	PszStatIn *int8 /* input filename (in UTF-8) of the 2pass stats file */
+
+	/* 2pass params (same as ffmpeg ones) */
+	FQcompress      float32 /* 0.0 => cbr, 1.0 => constant qp */
+	FQblur          float32 /* temporally blur quants */
+	FComplexityBlur float32 /* temporally blur complexity */
+	//_               [4]byte
+	Zones  *Zone /* ratecontrol overrides */
+	IZones int32 /* number of zone_t's */
+	//_      [4]byte
+	PszZones *int8 /* alternate method of specifying zones */
+}
+
+// PicStruct enumeration.
+const (
+	PicStructAuto        = int32(iota) // automatically decide (default)
+	PicStructProgressive               // progressive frame
+
+	// "TOP" and "BOTTOM" are not supported in x264 (PAFF only)
+	PicStructTopBottom       // top field followed by bottom
+	PicStructBottomTop       // bottom field followed by top
+	PicStructTopBottomTop    // top field, bottom field, top field repeated
+	PicStructBottomTopBottom // bottom field, top field, bottom field repeated
+	PicStructDouble          // double frame
+	PicStructTriple          // triple frame
+)
+
+// T opaque handler for encoder.
+type T struct{}
+
 // cptr return C pointer.
-func (p *Param) cptr() *C.x264_param_t {
+func (t *T) cptr() *C.x264_t {
+	return (*C.x264_t)(unsafe.Pointer(t))
+}
+
+// cptr return C pointer.
+func (n *X264NalT) cptr() *C.x264_nal_t {
+	return (*C.x264_nal_t)(unsafe.Pointer(n))
+}
+
+// CropRect (cropping rectangle parameters) type.
+// Added to those implicitly defined by non-mod16 video resolutions.
+type CropRect struct {
+	Left   uint32
+	Top    uint32
+	Right  uint32
+	Bottom uint32
+}
+
+// Zone type.
+// Zones: override ratecontrol or other options for specific sections of the video.
+// See EncoderReconfig() for which options can be changed.
+// If zones overlap, whichever comes later in the list takes precedence.
+type Zone struct {
+	// Range of frame numbers.
+	IStart int32
+	// Range of frame numbers.
+	IEnd int32
+	// Whether to use qp vs bitrate factor.
+	BForceQp       int32
+	IQp            int32
+	FBitrateFactor float32
+	//_              [4]byte
+	Param *X264ParamT
+}
+
+// Level (H.264 level restriction information) type.
+type Level struct {
+	LevelIdc byte
+	//_        [3]byte
+	// Max macroblock processing rate (macroblocks/sec).
+	Mbps uint32
+	// Max frame size (macroblocks).
+	FrameSize uint32
+	// Max decoded picture buffer (mbs).
+	Dpb uint32
+	// Max bitrate (kbit/sec).
+	Bitrate uint32
+	// Max vbv buffer (kbit).
+	Cpb uint32
+	// Max vertical mv component range (pixels).
+	MvRange uint16
+	// Max mvs per 2 consecutive mbs.
+	MvsPer2mb byte
+	SliceRate byte
+	// Min compression ratio.
+	Mincr byte
+	// Limit bipred to >=8x8.
+	Bipred8x8 byte
+	// Limit b_direct to >=8x8.
+	Direct8x8 byte
+	// Forbid interlacing.
+	FrameOnly byte
+}
+
+// cptr return C pointer.
+func (p *X264ParamT) cptr() *C.x264_param_t {
 	return (*C.x264_param_t)(unsafe.Pointer(p))
 }
 
@@ -647,9 +578,9 @@ type SeiPayload struct {
 // Sei type.
 type Sei struct {
 	NumPayloads int32
-	_           [4]byte
-	Payloads    *SeiPayload
-	SeiFree     *[0]byte
+	//_           [4]byte
+	Payloads *SeiPayload
+	SeiFree  *[0]byte
 }
 
 // Image type.
@@ -709,7 +640,7 @@ type Picture struct {
 	IDts int64
 	// In: custom encoding parameters to be set from this frame forwards (in coded order, not display order).
 	// If nil, continue using parameters from the previous frame.
-	Param *Param
+	Param *X264ParamT
 	// In: raw image data.
 	// Out: reconstructed image data.
 	Img Image
@@ -738,12 +669,12 @@ func NalEncode(h *T, dst []byte, nal *X264NalT) {
 }
 
 // ParamDefault - fill Param with default values and do CPU detection.
-func ParamDefault(param *Param) {
+func ParamDefault(param *X264ParamT) {
 	C.x264_param_default(param.cptr())
 }
 
 // ParamParse - set one parameter by name. Returns 0 on success.
-func ParamParse(param *Param, name string, value string) int32 {
+func ParamParse(param *X264ParamT, name string, value string) int32 {
 	cparam := param.cptr()
 
 	cname := C.CString(name)
@@ -767,7 +698,7 @@ func ParamParse(param *Param, name string, value string) int32 {
 // "film", "animation", "grain", "stillimage", "psnr", "ssim", "fastdecode", "zerolatency".
 //
 // Returns 0 on success, negative on failure (e.g. invalid preset/tune name).
-func ParamDefaultPreset(param *Param, preset string, tune string) int32 {
+func ParamDefaultPreset(param *X264ParamT, preset string, tune string) int32 {
 	cparam := param.cptr()
 
 	cpreset := C.CString(preset)
@@ -783,7 +714,7 @@ func ParamDefaultPreset(param *Param, preset string, tune string) int32 {
 
 // ParamApplyFastfirstpass - if first-pass mode is set (rc.b_stat_read == 0, rc.b_stat_write == 1),
 // modify the encoder settings to disable options generally not useful on the first pass.
-func ParamApplyFastfirstpass(param *Param) {
+func ParamApplyFastfirstpass(param *X264ParamT) {
 	cparam := param.cptr()
 	C.x264_param_apply_fastfirstpass(cparam)
 }
@@ -795,7 +726,7 @@ func ParamApplyFastfirstpass(param *Param) {
 // (can be nil, in which case the function will do nothing).
 //
 // Returns 0 on success, negative on failure (e.g. invalid profile name).
-func ParamApplyProfile(param *Param, profile string) int32 {
+func ParamApplyProfile(param *X264ParamT, profile string) int32 {
 	cparam := param.cptr()
 
 	cprofile := C.CString(profile)
@@ -834,7 +765,7 @@ func PictureClean(pic *Picture) {
 }
 
 // EncoderOpen - create a new encoder handler, all parameters from Param are copied.
-func EncoderOpen(param *Param) *T {
+func EncoderOpen(param *X264ParamT) *T {
 	cparam := param.cptr()
 
 	ret := C.x264_encoder_open(cparam)
@@ -844,7 +775,7 @@ func EncoderOpen(param *Param) *T {
 
 // EncoderReconfig - various parameters from Param are copied.
 // Returns 0 on success, negative on parameter validation error.
-func EncoderReconfig(enc *T, param *Param) int32 {
+func EncoderReconfig(enc *T, param *X264ParamT) int32 {
 	cenc := enc.cptr()
 	cparam := param.cptr()
 
@@ -854,7 +785,7 @@ func EncoderReconfig(enc *T, param *Param) int32 {
 }
 
 // EncoderParameters - copies the current internal set of parameters to the pointer provided.
-func EncoderParameters(enc *T, param *Param) {
+func EncoderParameters(enc *T, param *X264ParamT) {
 	cenc := enc.cptr()
 	cparam := param.cptr()
 
