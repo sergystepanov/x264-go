@@ -106,46 +106,28 @@ const (
 
 	/* !to add missing names */
 
-	// Colorspace type.
-	CspMask = 0x00ff
-	// Invalid mode.
-	CspNone = 0x0000
-	// Yuv 4:2:0 planar.
-	CspI420 = 0x0001
-	// Yvu 4:2:0 planar.
-	CspYv12 = 0x0002
-	// Yuv 4:2:0, with one y plane and one packed u+v.
-	CspNv12 = 0x0003
-	// Yuv 4:2:0, with one y plane and one packed v+u.
-	CspNv21 = 0x0004
-	// Yuv 4:2:2 planar.
-	CspI422 = 0x0005
-	// Yvu 4:2:2 planar.
-	CspYv16 = 0x0006
-	// Yuv 4:2:2, with one y plane and one packed u+v.
-	CspNv16 = 0x0007
-	// Yuyv 4:2:2 packed.
-	CspYuyv = 0x0008
-	// Uyvy 4:2:2 packed.
-	CspUyvy = 0x0009
-	// 10-bit yuv 4:2:2 packed in 32.
-	CspV210 = 0x000a
-	// Yuv 4:4:4 planar.
-	CspI444 = 0x000b
-	// Yvu 4:4:4 planar.
-	CspYv24 = 0x000c
-	// Packed bgr 24bits.
-	CspBgr = 0x000d
-	// Packed bgr 32bits.
-	CspBgra = 0x000e
-	// Packed rgb 24bits.
-	CspRgb = 0x000f
-	// End of list.
-	CspMax = 0x0010
-	// The csp is vertically flipped.
-	CspVflip = 0x1000
-	// The csp has a depth of 16 bits per pixel component.
-	CspHighDepth = 0x2000
+	/* Colorspace type */
+	X264CspMask      = 0x00ff /* */
+	X264CspNone      = 0x0000 /* Invalid mode     */
+	X264CspI400      = 0x0001 /* monochrome 4:0:0 */
+	X264CspI420      = 0x0002 /* yuv 4:2:0 planar */
+	X264CspYv12      = 0x0003 /* yvu 4:2:0 planar */
+	X264CspNv12      = 0x0004 /* yuv 4:2:0, with one y plane and one packed u+v */
+	X264CspNv21      = 0x0005 /* yuv 4:2:0, with one y plane and one packed v+u */
+	X264CspI422      = 0x0006 /* yuv 4:2:2 planar */
+	X264CspYv16      = 0x0007 /* yvu 4:2:2 planar */
+	X264CspNv16      = 0x0008 /* yuv 4:2:2, with one y plane and one packed u+v */
+	X264CspYuyv      = 0x0009 /* yuyv 4:2:2 packed */
+	X264CspUyvy      = 0x000a /* uyvy 4:2:2 packed */
+	X264CspV210      = 0x000b /* 10-bit yuv 4:2:2 packed in 32 */
+	X264CspI444      = 0x000c /* yuv 4:4:4 planar */
+	X264CspYv24      = 0x000d /* yvu 4:4:4 planar */
+	X264CspBgr       = 0x000e /* packed bgr 24bits */
+	X264CspBgra      = 0x000f /* packed bgr 32bits */
+	X264CspRgb       = 0x0010 /* packed rgb 24bits */
+	X264CspMax       = 0x0011 /* end of list */
+	X264CspVflip     = 0x1000 /* the csp is vertically flipped */
+	X264CspHighDepth = 0x2000 /* the csp has a depth of 16 bits per pixel component */
 
 	// Slice type.
 	// Let x264 choose the right type.
