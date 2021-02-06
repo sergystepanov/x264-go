@@ -105,6 +105,17 @@ const (
 	X264AvcintraFlavorSony      = 1
 
 	/* !to add missing names */
+	/* static const char * const x264_direct_pred_names[] = { "none", "spatial", "temporal", "auto", 0 }; */
+	/* static const char * const x264_motion_est_names[] = { "dia", "hex", "umh", "esa", "tesa", 0 }; */
+	/* static const char * const x264_b_pyramid_names[] = { "none", "strict", "normal", 0 }; */
+	/* static const char * const x264_overscan_names[] = { "undef", "show", "crop", 0 }; */
+	/* static const char * const x264_vidformat_names[] = { "component", "pal", "ntsc", "secam", "mac", "undef", 0 }; */
+	/* static const char * const x264_fullrange_names[] = { "off", "on", 0 }; */
+	/* static const char * const x264_colorprim_names[] = { "", "bt709", "undef", "", "bt470m", "bt470bg", "smpte170m", "smpte240m", "film", "bt2020", "smpte428", "smpte431", "smpte432", 0 }; */
+	/* static const char * const x264_transfer_names[] = { "", "bt709", "undef", "", "bt470m", "bt470bg", "smpte170m", "smpte240m", "linear", "log100", "log316", "iec61966-2-4", "bt1361e", "iec61966-2-1", "bt2020-10", "bt2020-12", "smpte2084", "smpte428", "arib-std-b67", 0 }; */
+	/* static const char * const x264_colmatrix_names[] = { "GBR", "bt709", "undef", "", "fcc", "bt470bg", "smpte170m", "smpte240m", "YCgCo", "bt2020nc", "bt2020c", "smpte2085", "chroma-derived-nc", "chroma-derived-c", "ICtCp", 0 }; */
+	/* static const char * const x264_nal_hrd_names[] = { "none", "vbr", "cbr", 0 }; */
+	/* static const char * const x264_avcintra_flavor_names[] = { "panasonic", "sony", 0 }; */
 
 	/* Colorspace type */
 	X264CspMask      = 0x00ff /* */
@@ -129,17 +140,17 @@ const (
 	X264CspVflip     = 0x1000 /* the csp is vertically flipped */
 	X264CspHighDepth = 0x2000 /* the csp has a depth of 16 bits per pixel component */
 
-	// Slice type.
-	// Let x264 choose the right type.
-	TypeAuto = 0x0000
-	TypeIdr  = 0x0001
-	TypeI    = 0x0002
-	TypeP    = 0x0003
-	// Non-disposable B-frame
-	TypeBref = 0x0004
-	TypeB    = 0x0005
-	// IDR or I depending on BOpenGop option.
-	TypeKeyframe = 0x0006
+	/* Slice type */
+	X264TypeAuto     = 0x0000 /* Let x264 choose the right type */
+	X264TypeIdr      = 0x0001
+	X264TypeI        = 0x0002
+	X264TypeP        = 0x0003
+	X264TypeBref     = 0x0004 /* Non-disposable B-frame */
+	X264TypeB        = 0x0005
+	X264TypeKeyframe = 0x0006 /* IDR or I depending on b_open_gop option */
+	/* !to reimplement macro */
+	/* #define IS_X264_TYPE_I(x) ((x)==X264_TYPE_I || (x)==X264_TYPE_IDR || (x)==X264_TYPE_KEYFRAME) */
+	/* #define IS_X264_TYPE_B(x) ((x)==X264_TYPE_B || (x)==X264_TYPE_BREF) */
 
 	// Log level.
 	LogNone    = -1
