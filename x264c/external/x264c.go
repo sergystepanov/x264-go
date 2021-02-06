@@ -61,18 +61,13 @@ const (
 	/* MIPS */
 	X264CpuMsa uint = 0x0000001 /* MIPS MSA */
 
-	// Analyse i4x4
-	AnalyseI4x4 = 0x0001
-	// Analyse i8x8 (requires 8x8 transform)
-	AnalyseI8x8 = 0x0002
-	// Analyse p16x8, p8x16 and p8x8
-	AnalysePsub16x16 = 0x0010
-	// Analyse p8x4, p4x8, p4x4
-	AnalysePsub8x8 = 0x0020
-	// Analyse b16x8, b8x16 and b8x8
-	AnalyseBsub16x16 = 0x0100
+	/* Analyse flags */
+	X264AnalyseI4x4      uint = 0x0001 /* Analyse i4x4 */
+	X264AnalyseI8x8      uint = 0x0002 /* Analyse i8x8 (requires 8x8 transform) */
+	X264AnalysePsub16x16 uint = 0x0010 /* Analyse p16x8, p8x16 and p8x8 */
+	X264AnalysePsub8x8   uint = 0x0020 /* Analyse p8x4, p4x8, p4x4 */
+	X264AnalyseBsub16x16 uint = 0x0100 /* Analyse b16x8, b8x16 and b8x8 */
 
-	// Analyse flags.
 	DirectPredNone       = 0
 	DirectPredSpatial    = 1
 	DirectPredTemporal   = 2
