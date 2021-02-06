@@ -7,69 +7,59 @@ package external
 #include <stdlib.h>
 */
 import "C"
-
 import "unsafe"
 
-// Constants.
-const (
-	// CPU flags.
-	CpuMmx = (1 << 0)
-	// MMX2 aka MMXEXT aka ISSE.
-	CpuMmx2   = (1 << 1)
-	CpuMmxext = CpuMmx2
-	CpuSse    = (1 << 2)
-	CpuSse2   = (1 << 3)
-	CpuLzcnt  = (1 << 4)
-	CpuSse3   = (1 << 5)
-	CpuSsse3  = (1 << 6)
-	// SSE4.1
-	CpuSse4 = (1 << 7)
-	// SSE4.2
-	CpuSse42 = (1 << 8)
-	// Requires OS support even if YMM registers aren't used.
-	CpuAvx = (1 << 9)
-	// AMD XOP.
-	CpuXop = (1 << 10)
-	// AMD FMA4.
-	CpuFma4 = (1 << 11)
-	CpuFma3 = (1 << 12)
-	CpuBmi1 = (1 << 13)
-	CpuBmi2 = (1 << 14)
-	CpuAvx2 = (1 << 15)
-	// AVX-512 {F, CD, BW, DQ, VL}, requires OS support.
-	CpuAvx512 = (1 << 16)
+/****************************************************************************
+ * Encoder parameters
+ ****************************************************************************/
+/* CPU flags */
 
-	// X86 modifiers.
-	// Avoid memory loads that span the border between two cachelines.
-	CpuCacheline32 = (1 << 17)
-	// 32/64 is the size of a cacheline in bytes.
-	CpuCacheline64 = (1 << 18)
-	// Avoid most SSE2 functions on Athlon64.
-	CpuSse2IsSlow = (1 << 19)
-	// A few functions are only faster on Core2 and Phenom.
-	CpuSse2IsFast = (1 << 20)
-	// The Conroe has a slow shuffle unit (relative to overall SSE performance).
-	CpuSlowShuffle = (1 << 21)
-	// If stack is only mod4 and not mod16.
-	CpuStackMod4 = (1 << 22)
-	// The Atom is terrible: slow SSE unaligned loads, slow SIMD multiplies, slow SIMD variable shifts, slow pshufb,
-	// cacheline split penalties -- gather everything here that isn't shared by other CPUs to avoid making half a dozen new SLOW flags.
-	CpuSlowAtom = (1 << 23)
-	// Auch as on the Intel Atom.
-	CpuSlowPshufb = (1 << 24)
-	// Such as on the AMD Bobcat.
-	CpuSlowPalignr = (1 << 25)
-	// PowerPC.
-	CpuAltivec = 0x0000001
-	// ARM and AArch64.
-	CpuArmv6 = 0x0000001
-	// ARM NEON.
-	CpuNeon = 0x0000002
-	// Transfer from NEON to ARM register is fast (Cortex-A9).
-	CpuFastNeonMrc = 0x0000004
-	CpuArmv8       = 0x0000008
-	// MIPS MSA.
-	CpuMsa = 0x0000001
+const (
+	/* x86 */
+	X264CpuMmx    uint = 1 << 0
+	X264CpuMmx2   uint = 1 << 1 /* MMX2 aka MMXEXT aka ISSE */
+	X264CpuMmxext      = X264CpuMmx2
+	X264CpuSse    uint = 1 << 2
+	X264CpuSse2   uint = 1 << 3
+	X264CpuLzcnt  uint = 1 << 4
+	X264CpuSse3   uint = 1 << 5
+	X264CpuSsse3  uint = 1 << 6
+	X264CpuSse4   uint = 1 << 7  /* SSE4.1 */
+	X264CpuSse42  uint = 1 << 8  /* SSE4.2 */
+	X264CpuAvx    uint = 1 << 9  /* Requires OS support even if YMM registers aren't used */
+	X264CpuXop    uint = 1 << 10 /* AMD XOP */
+	X264CpuFma4   uint = 1 << 11 /* AMD FMA4 */
+	X264CpuFma3   uint = 1 << 12
+	X264CpuBmi1   uint = 1 << 13
+	X264CpuBmi2   uint = 1 << 14
+	X264CpuAvx2   uint = 1 << 15
+	X264CpuAvx512 uint = 1 << 16 /* AVX-512 {F, CD, BW, DQ, VL}, requires OS support */
+	/* x86 modifiers */
+	X264CpuCacheline32 uint = 1 << 17 /* avoid memory loads that span the border between two cachelines */
+	X264CpuCacheline64 uint = 1 << 18 /* 32/64 is the size of a cacheline in bytes */
+	X264CpuSse2IsSlow  uint = 1 << 19 /* avoid most SSE2 functions on Athlon64 */
+	X264CpuSse2IsFast  uint = 1 << 20 /* a few functions are only faster on Core2 and Phenom */
+	X264CpuSlowShuffle uint = 1 << 21 /* The Conroe has a slow shuffle unit (relative to overall SSE performance) */
+	X264CpuStackMod4   uint = 1 << 22 /* if stack is only mod4 and not mod16 */
+	X264CpuSlowAtom    uint = 1 << 23 /* The Atom is terrible: slow SSE unaligned loads, slow
+	 * SIMD multiplies, slow SIMD variable shifts, slow pshufb,
+	 * cacheline split penalties -- gather everything here that
+	 * isn't shared by other CPUs to avoid making half a dozen
+	 * new SLOW flags. */
+	X264CpuSlowPshufb  uint = 1 << 24 /* such as on the Intel Atom */
+	X264CpuSlowPalignr uint = 1 << 25 /* such as on the AMD Bobcat */
+
+	/* PowerPC */
+	X264CpuAltivec uint = 0x0000001
+
+	/* ARM and AArch64 */
+	X264CpuArmv6       uint = 0x0000001
+	X264CpuNeon        uint = 0x0000002 /* ARM NEON */
+	X264CpuFastNeonMrc uint = 0x0000004 /* Transfer from NEON to ARM register is fast (Cortex-A9) */
+	X264CpuArmv8       uint = 0x0000008
+
+	/* MIPS */
+	X264CpuMsa uint = 0x0000001 /* MIPS MSA */
 
 	// Analyse i4x4
 	AnalyseI4x4 = 0x0001
@@ -113,7 +103,7 @@ const (
 	BPyramidStrict       = 1
 	BPyramidNormal       = 2
 	KeyintMinAuto        = 0
-	KeyintMaxInfinite    = (1 << 30)
+	KeyintMaxInfinite    = 1 << 30
 
 	// Colorspace type.
 	CspMask = 0x00ff
@@ -169,7 +159,7 @@ const (
 	TypeKeyframe = 0x0006
 
 	// Log level.
-	LogNone    = (-1)
+	LogNone    = -1
 	LogError   = 0
 	LogWarning = 1
 	LogInfo    = 2
@@ -179,18 +169,18 @@ const (
 	// Automatically select optimal number of threads.
 	ThreadsAuto = 0
 	// Automatically select optimal lookahead thread buffer size
-	SyncLookaheadAuto = (-1)
+	SyncLookaheadAuto = -1
 
 	// HRD
 	NalHrdNone = 0
 	NalHrdVbr  = 1
 	NalHrdCbr  = 2
 
-	ParamBadName  = (-1)
-	ParamBadValue = (-2)
+	ParamBadName  = -1
+	ParamBadValue = -2
 
 	// MbinfoConstant.
-	MbinfoConstant = (1 << 0)
+	MbinfoConstant = 1 << 0
 )
 
 // NalUnitType enumeration.
