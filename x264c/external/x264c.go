@@ -10,6 +10,34 @@ import "C"
 import "unsafe"
 
 /****************************************************************************
+ * NAL structure and functions
+ ****************************************************************************/
+
+/* enum nal_unit_type_e */
+const (
+	NalUnknown  = 0
+	NalSlice    = 1
+	NalSliceDpa = 2
+	NalSliceDpb = 3
+	NalSliceDpc = 4
+	NalSliceIdr = 5 /* ref_idc != 0 */
+	NalSei      = 6 /* ref_idc == 0 */
+	NalSps      = 7
+	NalPps      = 8
+	NalAud      = 9
+	NalFiller   = 12
+	/* ref_idc == 0 for 6,9,10,11,12 */
+)
+
+/* enum nal_priority_e */
+const (
+	NalPriorityDisposable = 0
+	NalPriorityLow        = 1
+	NalPriorityHigh       = 2
+	NalPriorityHighest    = 3
+)
+
+/****************************************************************************
  * Encoder parameters
  ****************************************************************************/
 /* CPU flags */
@@ -167,29 +195,6 @@ const (
 	X264NalHrdNone = 0
 	X264NalHrdVbr  = 1
 	X264NalHrdCbr  = 2
-)
-
-// NalUnitType enumeration.
-const (
-	NalUnknown = int32(iota)
-	NalSlice
-	NalSliceDpa
-	NalSliceDpb
-	NalSliceDpc
-	NalSliceIdr
-	NalSei
-	NalSps
-	NalPps
-	NalAud
-	NalFiller
-)
-
-// NalPriority enumeration.
-const (
-	NalPriorityDisposable = int32(iota)
-	NalPriorityLow
-	NalPriorityHigh
-	NalPriorityHighest
 )
 
 // PicStruct enumeration.
