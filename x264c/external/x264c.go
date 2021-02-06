@@ -152,12 +152,12 @@ const (
 	/* #define IS_X264_TYPE_I(x) ((x)==X264_TYPE_I || (x)==X264_TYPE_IDR || (x)==X264_TYPE_KEYFRAME) */
 	/* #define IS_X264_TYPE_B(x) ((x)==X264_TYPE_B || (x)==X264_TYPE_BREF) */
 
-	// Log level.
-	LogNone    = -1
-	LogError   = 0
-	LogWarning = 1
-	LogInfo    = 2
-	LogDebug   = 3
+	/* Log level */
+	X264LogNone    = -1
+	X264LogError   = 0
+	X264LogWarning = 1
+	X264LogInfo    = 2
+	X264LogDebug   = 3
 
 	// Threading.
 	// Automatically select optimal number of threads.
