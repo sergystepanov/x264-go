@@ -9,6 +9,9 @@ package external
 import "C"
 import "unsafe"
 
+/* T is opaque handler for encoder */
+type T struct{}
+
 /****************************************************************************
  * NAL structure and functions
  ****************************************************************************/
@@ -221,6 +224,12 @@ const (
 	X264NalHrdCbr  = 2
 )
 
+const (
+	/* The macroblock is constant and remains unchanged from the previous frame. */
+	X264MbinfoConstant = 1 << 0
+	/* More flags may be added in the future. */
+)
+
 /* Zones: override ratecontrol or other options for specific sections of the video.
  * See x264_encoder_reconfig() for which options can be changed.
  * If zones overlap, whichever comes later in the list takes precedence. */
@@ -253,7 +262,7 @@ type X264ParamT struct {
 	/* NAL HRD
 	 * Uses Buffering and Picture Timing SEIs to signal HRD
 	 * The HRD in H.264 was not designed with VFR in mind.
-	 * It is therefore not recommendeded to use NAL HRD with VFR.
+	 * It is therefore not recommended to use NAL HRD with VFR.
 	 * Furthermore, reconfiguring the VBV (via x264_encoder_reconfig)
 	 * will currently generate invalid HRD. */
 	INalHrd int32
@@ -303,7 +312,6 @@ type X264ParamT struct {
 	BConstrainedIntra int32
 
 	ICqmPreset int32
-	//_          [4]byte
 	PszCqmFile *int8    /* filename (in UTF-8) of CQM file, JM format */
 	Cqm4iy     [16]byte /* used only if i_cqm_preset == X264_CQM_CUSTOM */
 	Cqm4py     [16]byte
@@ -446,7 +454,7 @@ type X264ParamT struct {
 	/* Fake Interlaced.
 	 *
 	 * Used only when b_interlaced=0. Setting this flag makes it possible to flag the stream as PAFF interlaced yet
-	 * encode all frames progessively. It is useful for encoding 25p and 30p Blu-Ray streams.
+	 * encode all frames progressively. It is useful for encoding 25p and 30p Blu-Ray streams.
 	 */
 	BFakeInterlaced int32
 
@@ -474,166 +482,176 @@ type X264ParamT struct {
 	Opaque unsafe.Pointer
 }
 
-// PicStruct enumeration.
-const (
-	PicStructAuto        = int32(iota) // automatically decide (default)
-	PicStructProgressive               // progressive frame
+/****************************************************************************
+ * H.264 level restriction information
+ ****************************************************************************/
 
+type Level struct {
+	LevelIdc  byte
+	Mbps      int32  /* max macroblock processing rate (macroblocks/sec) */
+	FrameSize int32  /* max frame size (macroblocks) */
+	Dpb       int32  /* max decoded picture buffer (mbs) */
+	Bitrate   int32  /* max bitrate (kbit/sec) */
+	Cpb       int32  /* max vbv buffer (kbit) */
+	MvRange   uint16 /* max vertical mv component range (pixels) */
+	MvsPer2mb byte   /* max mvs per 2 consecutive mbs. */
+	SliceRate byte   /* ?? */
+	Mincr     byte   /* min compression ratio */
+	Bipred8x8 byte   /* limit bipred to >=8x8 */
+	Direct8x8 byte   /* limit b_direct to >=8x8 */
+	FrameOnly byte   /* forbid interlacing */
+}
+
+type PicStruct int32
+
+const (
+	PicStructAuto        = iota // automatically decide (default)
+	PicStructProgressive = 1    // progressive frame
 	// "TOP" and "BOTTOM" are not supported in x264 (PAFF only)
-	PicStructTopBottom       // top field followed by bottom
-	PicStructBottomTop       // bottom field followed by top
-	PicStructTopBottomTop    // top field, bottom field, top field repeated
-	PicStructBottomTopBottom // bottom field, top field, bottom field repeated
-	PicStructDouble          // double frame
-	PicStructTriple          // triple frame
+	PicStructTopBottom       = 4 // top field followed by bottom
+	PicStructBottomTop       = 5 // bottom field followed by top
+	PicStructTopBottomTop    = 6 // top field, bottom field, top field repeated
+	PicStructBottomTopBottom = 7 // bottom field, top field, bottom field repeated
+	PicStructDouble          = 8 // double frame
+	PicStructTriple          = 9 // triple frame
 )
 
-// T opaque handler for encoder.
-type T struct{}
-
-// cptr return C pointer.
-func (t *T) cptr() *C.x264_t {
-	return (*C.x264_t)(unsafe.Pointer(t))
-}
-
-// cptr return C pointer.
-func (n *X264NalT) cptr() *C.x264_nal_t {
-	return (*C.x264_nal_t)(unsafe.Pointer(n))
-}
-
-// Level (H.264 level restriction information) type.
-type Level struct {
-	LevelIdc byte
-	//_        [3]byte
-	// Max macroblock processing rate (macroblocks/sec).
-	Mbps uint32
-	// Max frame size (macroblocks).
-	FrameSize uint32
-	// Max decoded picture buffer (mbs).
-	Dpb uint32
-	// Max bitrate (kbit/sec).
-	Bitrate uint32
-	// Max vbv buffer (kbit).
-	Cpb uint32
-	// Max vertical mv component range (pixels).
-	MvRange uint16
-	// Max mvs per 2 consecutive mbs.
-	MvsPer2mb byte
-	SliceRate byte
-	// Min compression ratio.
-	Mincr byte
-	// Limit bipred to >=8x8.
-	Bipred8x8 byte
-	// Limit b_direct to >=8x8.
-	Direct8x8 byte
-	// Forbid interlacing.
-	FrameOnly byte
-}
-
-// cptr return C pointer.
-func (p *X264ParamT) cptr() *C.x264_param_t {
-	return (*C.x264_param_t)(unsafe.Pointer(p))
-}
-
-// Hrd type.
 type Hrd struct {
 	CpbInitialArrivalTime float64
 	CpbFinalArrivalTime   float64
 	CpbRemovalTime        float64
-	DpbOutputTime         float64
+
+	DpbOutputTime float64
 }
 
-// SeiPayload type.
+/* Arbitrary user SEI:
+ * Payload size is in bytes and the payload pointer must be valid.
+ * Payload types and syntax can be found in Annex D of the H.264 Specification.
+ * SEI payload alignment bits as described in Annex D must be included at the
+ * end of the payload if needed.
+ * The payload should not be NAL-encapsulated.
+ * Payloads are written first in order of input, apart from in the case when HRD
+ * is enabled where payloads are written after the Buffering Period SEI. */
 type SeiPayload struct {
 	PayloadSize int32
 	PayloadType int32
-	Payload     *uint8
+	Payload     *byte
 }
 
-// Sei type.
 type Sei struct {
 	NumPayloads int32
-	//_           [4]byte
-	Payloads *SeiPayload
-	SeiFree  *[0]byte
+	Payloads    *SeiPayload
+	/* In: optional callback to free each payload AND x264_sei_payload_t when used. */
+	SeiFree *func(arg0 unsafe.Pointer)
 }
 
-// Image type.
 type Image struct {
-	// Colorspace.
-	ICsp int32
-	// Number of image planes.
-	IPlane int32
-	// Strides for each plane.
-	IStride [4]int32
-	// Pointers to each plane.
-	Plane [4]unsafe.Pointer
+	ICsp    int32             /* Colorspace */
+	IPlane  int32             /* Number of image planes */
+	IStride [4]int32          /* Strides for each plane */
+	Plane   [4]unsafe.Pointer /* Pointers to each plane */
 }
 
-// ImageProperties type.
+/* All arrays of data here are ordered as follows:
+ * each array contains one offset per macroblock, in raster scan order.  In interlaced
+ * mode, top-field MBs and bottom-field MBs are interleaved at the row level.
+ * Macroblocks are 16x16 blocks of pixels (with respect to the luma plane).  For the
+ * purposes of calculating the number of macroblocks, width and height are rounded up to
+ * the nearest 16.  If in interlaced mode, height is rounded up to the nearest 32 instead. */
 type ImageProperties struct {
-	// In: an array of quantizer offsets to be applied to this image during encoding.
+	/* In: an array of quantizer offsets to be applied to this image during encoding.
+	 *     These are added on top of the decisions made by x264.
+	 *     Offsets can be fractional; they are added before QPs are rounded to integer.
+	 *     Adaptive quantization must be enabled to use this feature.  Behavior if quant
+	 *     offsets differ between encoding passes is undefined. */
 	QuantOffsets *float32
-	// In: optional callback to free quant_offsets when used.
-	// Useful if one wants to use a different quant_offset array for each frame.
-	QuantOffsetsFree *[0]byte
+	/* In: optional callback to free quant_offsets when used.
+	*     Useful if one wants to use a different quant_offset array for each frame. */
+	QuantOffsetsFree *func(arg0 unsafe.Pointer)
 
-	// In: optional array of flags for each macroblock.
-	// Out: if b_mb_info_update is set, x264 will update this array as a result of encoding.
-	MbInfo *uint8
-	// In: optional callback to free mb_info when used.
-	MbInfoFree *[0]byte
+	/* In: optional array of flags for each macroblock.
+	 *     Allows specifying additional information for the encoder such as which macroblocks
+	 *     remain unchanged.  Usable flags are listed below.
+	 *     x264_param_t.analyse.b_mb_info must be set to use this, since x264 needs to track
+	 *     extra data internally to make full use of this information.
+	 *
+	 * Out: if b_mb_info_update is set, x264 will update this array as a result of encoding.
+	 *
+	 *      For "MBINFO_CONSTANT", it will remove this flag on any macroblock whose decoded
+	 *      pixels have changed.  This can be useful for e.g. noting which areas of the
+	 *      frame need to actually be blitted. Note: this intentionally ignores the effects
+	 *      of deblocking for the current frame, which should be fine unless one needs exact
+	 *      pixel-perfect accuracy.
+	 *
+	 *      Results for MBINFO_CONSTANT are currently only set for P-frames, and are not
+	 *      guaranteed to enumerate all blocks which haven't changed.  (There may be false
+	 *      negatives, but no false positives.)
+	 */
+	MbInfo *byte
+	/* In: optional callback to free mb_info when used. */
+	MbInfoFree *func(arg0 unsafe.Pointer)
 
-	// Out: SSIM of the the frame luma (if x264_param_t.b_ssim is set).
+	/* Out: SSIM of the the frame luma (if x264_param_t.b_ssim is set) */
 	FSsim float64
-	// Out: Average PSNR of the frame (if x264_param_t.b_psnr is set).
+	/* Out: Average PSNR of the frame (if x264_param_t.b_psnr is set) */
 	FPsnrAvg float64
-	// Out: PSNR of Y, U, and V (if x264_param_t.b_psnr is set).
+	/* Out: PSNR of Y, U, and V (if x264_param_t.b_psnr is set) */
 	FPsnr [3]float64
 
-	// Out: Average effective CRF of the encoded frame.
+	/* Out: Average effective CRF of the encoded frame */
 	FCrfAvg float64
 }
 
-// Picture type.
 type Picture struct {
-	// In: force picture type (if not auto).
-	// Out: type of the picture encoded.
+	/* In: force picture type (if not auto)
+	 *     If x264 encoding parameters are violated in the forcing of picture types,
+	 *     x264 will correct the input picture type and log a warning.
+	 * Out: type of the picture encoded */
 	IType int32
-	// In: force quantizer for != X264QpAuto.
+	/* In: force quantizer for != X264_QP_AUTO */
 	IQpplus1 int32
-	// In: pic_struct, for pulldown/doubling/etc...used only if b_pic_struct=1.
-	// Out: pic_struct element associated with frame.
+	/* In: pic_struct, for pulldown/doubling/etc...used only if b_pic_struct=1.
+	 *     use pic_struct_e for pic_struct inputs
+	 * Out: pic_struct element associated with frame */
 	IPicStruct int32
-	// Out: whether this frame is a keyframe.
-	// Important when using modes that result in SEI recovery points being used instead of IDR frames.
+	/* Out: whether this frame is a keyframe.  Important when using modes that result in
+	 * SEI recovery points being used instead of IDR frames. */
 	BKeyframe int32
-	// In: user pts, Out: pts of encoded picture (user).
+	/* In: user pts, Out: pts of encoded picture (user)*/
 	IPts int64
-	// Out: frame dts. When the pts of the first frame is close to zero,
-	// initial frames may have a negative dts which must be dealt with by any muxer.
+	/* Out: frame dts. When the pts of the first frame is close to zero,
+	 *      initial frames may have a negative dts which must be dealt with by any muxer */
 	IDts int64
-	// In: custom encoding parameters to be set from this frame forwards (in coded order, not display order).
-	// If nil, continue using parameters from the previous frame.
+	/* In: custom encoding parameters to be set from this frame forwards
+	   (in coded order, not display order). If NULL, continue using
+	   parameters from the previous frame.  Some parameters, such as
+	   aspect ratio, can only be changed per-GOP due to the limitations
+	   of H.264 itself; in this case, the caller must force an IDR frame
+	   if it needs the changed parameter to apply immediately. */
 	Param *X264ParamT
-	// In: raw image data.
-	// Out: reconstructed image data.
+	/* In: raw image data */
+	/* Out: reconstructed image data.  x264 may skip part of the reconstruction process,
+	   e.g. deblocking, in frames where it isn't necessary.  To force complete
+	   reconstruction, at a small speed cost, set b_full_recon. */
 	Img Image
-	// In: optional information to modify encoder decisions for this frame.
-	// Out: information about the encoded frame.
+	/* In: optional information to modify encoder decisions for this frame
+	 * Out: information about the encoded frame */
 	Prop ImageProperties
-	// Out: HRD timing information. Output only when i_nal_hrd is set.
+	/* Out: HRD timing information. Output only when i_nal_hrd is set. */
 	Hrdiming Hrd
-	// In: arbitrary user SEI (e.g subtitles, AFDs).
+	/* In: arbitrary user SEI (e.g subtitles, AFDs) */
 	ExtraSei Sei
-	// Private user data. copied from input to output frames.
-	Opaque *byte
+	/* private user data. copied from input to output frames. */
+	Opaque unsafe.Pointer
 }
 
-// cptr return C pointer.
-func (p *Picture) cptr() *C.x264_picture_t {
-	return (*C.x264_picture_t)(unsafe.Pointer(p))
-}
+func (t *T) cptr() *C.x264_t { return (*C.x264_t)(unsafe.Pointer(t)) }
+
+func (n *X264NalT) cptr() *C.x264_nal_t { return (*C.x264_nal_t)(unsafe.Pointer(n)) }
+
+func (p *X264ParamT) cptr() *C.x264_param_t { return (*C.x264_param_t)(unsafe.Pointer(p)) }
+
+func (p *Picture) cptr() *C.x264_picture_t { return (*C.x264_picture_t)(unsafe.Pointer(p)) }
 
 // NalEncode - encode Nal.
 func NalEncode(h *T, dst []byte, nal *X264NalT) {
