@@ -7,5 +7,5 @@ require (
 	github.com/gen2brain/shm v0.0.0-20200228170931-49f9650110c5 // indirect
 	github.com/kbinani/screenshot v0.0.0-20191211154542-3a185f1ce18f
 	github.com/lxn/win v0.0.0-20201111105847-2a20daff6a55 // indirect
-	github.com/xlab/c-for-go v0.0.0-20201223145653-3ba5db515dcb // indirect
+	golang.org/x/sys v0.0.0-20210124154548-22da62e12c0c // indirect
 )
