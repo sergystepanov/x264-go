@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"os/signal"
 	"syscall"
@@ -27,7 +28,7 @@ func main() {
 		Tune:      "zerolatency",
 		Preset:    "ultrafast",
 		Profile:   "baseline",
-		LogLevel:  x264.LogDebug,
+		//LogLevel:  x264.LogDebug,
 	}
 
 	enc, err := x264.NewEncoder(file, opts)
@@ -41,7 +42,10 @@ func main() {
 	s := make(chan os.Signal, 1)
 	signal.Notify(s, os.Interrupt, syscall.SIGTERM)
 
-	ticker := time.NewTicker(time.Second / time.Duration(120))
+	ticker := time.NewTicker(time.Second / time.Duration(60))
+
+	start := time.Now()
+	frame := 0
 
 	for range ticker.C {
 		select {
@@ -56,17 +60,20 @@ func main() {
 
 			os.Exit(0)
 		default:
-		}
-		img, err := screenshot.CaptureRect(bounds)
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "%s\n", err.Error())
-			continue
-		}
+			frame++
+			log.Printf("frame: %v", frame)
+			img, err := screenshot.CaptureRect(bounds)
+			if err != nil {
+				fmt.Fprintf(os.Stderr, "%s\n", err.Error())
+				continue
+			}
 
-		err = enc.Encode(img)
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "%s\n", err.Error())
+			err = enc.Encode(img)
+			if err != nil {
+				fmt.Fprintf(os.Stderr, "%s\n", err.Error())
+			}
+			log.Printf("t: %v", time.Since(start))
+			start = time.Now()
 		}
-		//enc.Flush()
 	}
 }
