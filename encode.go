@@ -2,17 +2,19 @@
 
 package x264
 
-import "C"
-
 import (
 	"fmt"
+	"github.com/sergystepanov/x264-go/v2/x264c/color"
+	x264c "github.com/sergystepanov/x264-go/v2/x264c/external"
 	"image"
 	"io"
 	"log"
-
-	"github.com/sergystepanov/x264-go/v2/x264c/color"
-	x264c "github.com/sergystepanov/x264-go/v2/x264c/external"
 )
+
+/*
+#include <stdlib.h>
+*/
+import "C"
 
 // Options represent encoding options.
 type Options struct {
@@ -168,9 +170,10 @@ func (e *Encoder) Encode(im image.Image) (err error) {
 	picIn.Img.IStride[1] = int32(e.opts.Width) / 2
 	picIn.Img.IStride[2] = int32(e.opts.Width) / 2
 
-	picIn.Img.Plane[0] = C.CBytes(e.img.Y)
-	picIn.Img.Plane[1] = C.CBytes(e.img.Cb)
-	picIn.Img.Plane[2] = C.CBytes(e.img.Cr)
+	y, cb, cr := C.CBytes(e.img.Y), C.CBytes(e.img.Cb), C.CBytes(e.img.Cr)
+	picIn.Img.Plane[0] = y
+	picIn.Img.Plane[1] = cb
+	picIn.Img.Plane[2] = cr
 
 	//e.img.CopyToCPointer(picIn.Img.Plane[0], picIn.Img.Plane[1], picIn.Img.Plane[2])
 
@@ -180,6 +183,9 @@ func (e *Encoder) Encode(im image.Image) (err error) {
 	log.Printf("pts: %v", e.pts)
 
 	ret := x264c.EncoderEncode(e.e, e.nals, &e.nnals, &picIn, &picOut)
+	C.free(y)
+	C.free(cb)
+	C.free(cr)
 	if ret < 0 {
 		err = fmt.Errorf("x264: cannot encode picture")
 		return
