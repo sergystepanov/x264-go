@@ -17,7 +17,6 @@ func main() {
 		Preset:    "fast",
 		Tune:      "stillimage",
 		Profile:   "high",
-		LogLevel:  x264.LogDebug,
 	}
 
 	w, err := os.Create("example.264")
