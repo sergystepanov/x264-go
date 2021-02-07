@@ -8,18 +8,10 @@ import (
 	"fmt"
 	"image"
 	"io"
+	"log"
 
 	"github.com/sergystepanov/x264-go/v2/x264c/color"
 	x264c "github.com/sergystepanov/x264-go/v2/x264c/external"
-)
-
-// Logging constants.
-const (
-	LogNone int32 = iota - 1
-	LogError
-	LogWarning
-	LogInfo
-	LogDebug
 )
 
 // Options represent encoding options.
@@ -55,6 +47,9 @@ type Encoder struct {
 	nals  []*x264c.X264NalT
 
 	picIn x264c.Picture
+
+	// ticks per frame
+	tpf int64
 }
 
 // NewEncoder returns new x264 encoder.
@@ -91,25 +86,19 @@ func NewEncoder(w io.Writer, opts *Options) (e *Encoder, err error) {
 	param.BRepeatHeaders = 1
 	param.BAnnexb = 1
 	param.ILogLevel = e.opts.LogLevel
-	param.IKeyintMax = 30
+	param.IKeyintMax = 60
 	param.BIntraRefresh = 1
-	param.IFpsNum = uint32(e.opts.FrameRate)
+	param.IFpsNum = 60
 	param.IFpsDen = 1
 
 	param.Rc.IRcMethod = x264c.X264RcCrf
 	param.Rc.FRfConstant = 28
 
 	//param.BVfrInput = 1
-	//param.ITimebaseNum = 1
-	//param.ITimebaseDen = 90000
+	param.ITimebaseNum = 1
+	param.ITimebaseDen = 1000
 
-	//if e.opts.FrameRate > 0 {
-	//	param.IFpsNum = uint32(e.opts.FrameRate)
-	//	param.IFpsDen = 1
-	//
-	//	param.IKeyintMax = int32(e.opts.FrameRate)
-	//	//param.BIntraRefresh = 1
-	//}
+	e.tpf = int64(param.ITimebaseDen * param.IFpsDen / param.ITimebaseNum / param.IFpsNum)
 
 	if e.opts.Profile != "" {
 		ret := x264c.ParamApplyProfile(&param, e.opts.Profile)
@@ -186,7 +175,9 @@ func (e *Encoder) Encode(im image.Image) (err error) {
 	//e.img.CopyToCPointer(picIn.Img.Plane[0], picIn.Img.Plane[1], picIn.Img.Plane[2])
 
 	picIn.IPts = e.pts
-	e.pts++
+	e.pts += e.tpf
+
+	log.Printf("pts: %v", e.pts)
 
 	ret := x264c.EncoderEncode(e.e, e.nals, &e.nnals, &picIn, &picOut)
 	if ret < 0 {
