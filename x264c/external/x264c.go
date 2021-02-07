@@ -221,6 +221,17 @@ const (
 	X264NalHrdCbr  = 2
 )
 
+/* Zones: override ratecontrol or other options for specific sections of the video.
+ * See x264_encoder_reconfig() for which options can be changed.
+ * If zones overlap, whichever comes later in the list takes precedence. */
+type Zone struct {
+	IStart, IEnd   int32 /* range of frame numbers */
+	BForceQp       int32 /* whether to use qp vs bitrate factor */
+	IQp            int32
+	FBitrateFactor float32
+	Param          *X264ParamT
+}
+
 type X264ParamT struct {
 	/* CPU flags */
 	Cpu               uint32
@@ -247,7 +258,21 @@ type X264ParamT struct {
 	 * will currently generate invalid HRD. */
 	INalHrd int32
 
-	Vui Vui
+	Vui struct {
+		/* they will be reduced to be 0 < x <= 65535 and prime */
+		ISarHeight int32
+		ISarWidth  int32
+
+		IOverscan int32 /* 0=undef, 1=no overscan, 2=overscan */
+
+		/* see h264 annex E for the values of the following */
+		IVidformat int32
+		BFullrange int32
+		IColorprim int32
+		ITransfer  int32
+		IColmatrix int32
+		IChromaLoc int32 /* both top & bottom */
+	}
 
 	/* Bitstream parameters */
 	IFrameReference int32 /* Maximum number of reference frames */
@@ -297,180 +322,156 @@ type X264ParamT struct {
 	PszDumpYuv  *int8 /* filename (in UTF-8) for reconstructed frames */
 
 	/* Encoder analyser parameters */
-	Analyse Analyse
+	Analyse struct {
+		Intra uint32 /* intra partitions */
+		Inter uint32 /* inter partitions */
 
-	//_ [4]byte
+		BTransform8x8   int32
+		IWeightedPred   int32 /* weighting for P-frames */
+		BWeightedBipred int32 /* implicit weighting for B-frames */
+		IDirectMvPred   int32 /* spatial vs temporal mv prediction */
+		IChromaQpOffset int32
+
+		IMeMethod        int32   /* motion estimation algorithm to use (X264_ME_*) */
+		IMeRange         int32   /* integer pixel motion estimation search range (from predicted mv) */
+		IMvRange         int32   /* maximum length of a mv (in pixels). -1 = auto, based on level */
+		IMvRangeThread   int32   /* minimum space between threads. -1 = auto, based on number of threads. */
+		ISubpelRefine    int32   /* subpixel motion estimation quality */
+		BChromaMe        int32   /* chroma ME for subpel and mode decision in P-frames */
+		BMixedReferences int32   /* allow each mb partition to have its own reference number */
+		ITrellis         int32   /* trellis RD quantization */
+		BFastPskip       int32   /* early SKIP detection on P-frames */
+		BDctDecimate     int32   /* transform coefficient thresholding on P-frames */
+		INoiseReduction  int32   /* adaptive pseudo-deadzone */
+		FPsyRd           float32 /* Psy RD strength */
+		FPsyTrellis      float32 /* Psy trellis strength */
+		BPsy             int32   /* Toggle all psy optimizations */
+
+		BMbInfo       int32 /* Use input mb_info data in x264_picture_t */
+		BMbInfoUpdate int32 /* Update the values in mb_info according to the results of encoding. */
+
+		/* the deadzone size that will be used in luma quantization */
+		ILumaDeadzone [2]int32
+
+		BPsnr int32 /* compute and print PSNR stats */
+		BSsim int32 /* compute and print SSIM stats */
+	}
 
 	/* Rate control parameters */
-	Rc Rc
+	Rc struct {
+		IRcMethod int32 /* X264_RC_* */
 
-	// Cropping Rectangle parameters: added to those implicitly defined by non-mod16 video resolutions.
-	CropRect CropRect
+		IQpConstant int32 /* 0=lossless */
+		IQpMin      int32 /* min allowed QP value */
+		IQpMax      int32 /* max allowed QP value */
+		IQpStep     int32 /* max QP step between frames */
 
-	// Frame packing arrangement flag.
+		IBitrate       int32
+		FRfConstant    float32 /* 1pass VBR, nominal QP */
+		FRfConstantMax float32 /* In CRF mode, maximum CRF as caused by VBV */
+		FRateTolerance float32
+		IVbvMaxBitrate int32
+		IVbvBufferSize int32
+		FVbvBufferInit float32 /* <=1: fraction of buffer_size. >1: kbit */
+		FIpFactor      float32
+		FPbFactor      float32
+
+		/* VBV filler: force CBR VBV and use filler bytes to ensure hard-CBR.
+		 * Implied by NAL-HRD CBR. */
+		BFiller int32
+
+		IAqMode     int32 /* psy adaptive QP. (X264_AQ_*) */
+		FAqStrength float32
+		BMbTree     int32 /* Macroblock-tree ratecontrol. */
+		ILookahead  int32
+
+		/* 2pass */
+		BStatWrite int32 /* Enable stat writing in psz_stat_out */
+		PszStatOut *int8 /* output filename (in UTF-8) of the 2pass stats file */
+		BStatRead  int32 /* Read stat from psz_stat_in and use it */
+		PszStatIn  *int8 /* input filename (in UTF-8) of the 2pass stats file */
+
+		/* 2pass params (same as ffmpeg ones) */
+		FQcompress      float32 /* 0.0 => cbr, 1.0 => constant qp */
+		FQblur          float32 /* temporally blur quants */
+		FComplexityBlur float32 /* temporally blur complexity */
+		Zones           *Zone   /* ratecontrol overrides */
+		IZones          int32   /* number of zone_t's */
+		PszZones        *int8   /* alternate method of specifying zones */
+	}
+
+	/* Cropping Rectangle parameters: added to those implicitly defined by
+	   non-mod16 video resolutions. */
+	CropRect struct {
+		ILeft   int32
+		ITop    int32
+		IRight  int32
+		IBottom int32
+	}
+
+	/* frame packing arrangement flag */
 	IFramePacking int32
 
-	// Muxing parameters.
-	// Generate access unit delimiters.
-	BAud int32
-	// Put SPS/PPS before each keyframe.
-	BRepeatHeaders int32
-	// If set, place start codes (4 bytes) before NAL units, otherwise place size (4 bytes) before NAL units.
-	BAnnexb int32
-	// SPS and PPS id number.
-	ISpsId int32
-	// VFR input. If 1, use timebase and timestamps for ratecontrol purposes. If 0, use fps only.
-	BVfrInput int32
-	// Use explicitly set timebase for CFR.
-	BPulldown int32
-	IFpsNum   uint32
-	IFpsDen   uint32
-	// Timebase numerator.
-	ITimebaseNum uint32
-	// Timebase denominator.
-	ITimebaseDen uint32
+	/* alternative transfer SEI */
+	IAlternativeTransfer int32
+
+	/* Muxing parameters */
+	BAud           int32 /* generate access unit delimiters */
+	BRepeatHeaders int32 /* put SPS/PPS before each keyframe */
+	BAnnexb        int32 /* if set, place start codes (4 bytes) before NAL units,
+	 * otherwise place size (4 bytes) before NAL units. */
+	ISpsId    int32 /* SPS and PPS id number */
+	BVfrInput int32 /* VFR input.  If 1, use timebase and timestamps for ratecontrol purposes.
+	 * If 0, use fps only. */
+	BPulldown    int32 /* use explicity set timebase for CFR */
+	IFpsNum      uint32
+	IFpsDen      uint32
+	ITimebaseNum uint32 /* Timebase numerator */
+	ITimebaseDen uint32 /* Timebase denominator */
 
 	BTff int32
 
-	// The correct pic_struct must be passed with each input frame.
-	// The input timebase should be the timebase corresponding to the output framerate. This should be constant.
-	// e.g. for 3:2 pulldown timebase should be 1001/30000.
-	// The PTS passed with each frame must be the PTS of the frame after pulldown is applied.
-	// Frame doubling and tripling require BVfrInput set to zero (see H.264 Table D-1)
-	//
-	// Pulldown changes are not clearly defined in H.264. Therefore, it is the calling app's responsibility to manage this.
+	/* Pulldown:
+	 * The correct pic_struct must be passed with each input frame.
+	 * The input timebase should be the timebase corresponding to the output framerate. This should be constant.
+	 * e.g. for 3:2 pulldown timebase should be 1001/30000
+	 * The PTS passed with each frame must be the PTS of the frame after pulldown is applied.
+	 * Frame doubling and tripling require b_vfr_input set to zero (see H.264 Table D-1)
+	 *
+	 * Pulldown changes are not clearly defined in H.264. Therefore, it is the calling app's responsibility to manage this.
+	 */
+
 	BPicStruct int32
 
-	// Used only when b_interlaced=0. Setting this flag makes it possible to flag the stream as PAFF interlaced yet
-	// encode all frames progessively. It is useful for encoding 25p and 30p Blu-Ray streams.
+	/* Fake Interlaced.
+	 *
+	 * Used only when b_interlaced=0. Setting this flag makes it possible to flag the stream as PAFF interlaced yet
+	 * encode all frames progessively. It is useful for encoding 25p and 30p Blu-Ray streams.
+	 */
 	BFakeInterlaced int32
 
-	// Don't optimize header parameters based on video content, e.g. ensure that splitting an input video, compressing
-	// each part, and stitching them back together will result in identical SPS/PPS. This is necessary for stitching
-	// with container formats that don't allow multiple SPS/PPS.
+	/* Don't optimize header parameters based on video content, e.g. ensure that splitting an input video, compressing
+	 * each part, and stitching them back together will result in identical SPS/PPS. This is necessary for stitching
+	 * with container formats that don't allow multiple SPS/PPS. */
 	BStitchable int32
 
-	// Use OpenCL when available.
-	BOpencl int32
-	// Specify count of GPU devices to skip, for CLI users.
-	IOpenclDevice int32
-	_             [4]byte
-	// Pass explicit cl_device_id as void*, for API users.
-	OpenclDeviceId unsafe.Pointer
-	// Filename (in UTF-8) of the compiled OpenCL kernel cache file.
-	PszClbinFile *int8
+	BOpencl        int32          /* use OpenCL when available */
+	IOpenclDevice  int32          /* specify count of GPU devices to skip, for CLI users */
+	OpenclDeviceId unsafe.Pointer /* pass explicit cl_device_id as void*, for API users */
+	PszClbinFile   *int8          /* filename (in UTF-8) of the compiled OpenCL kernel cache file */
 
-	// Slicing parameters
-	// Max size per slice in bytes; includes estimated NAL overhead.
-	ISliceMaxSize int32
-	// Max number of MBs per slice; overrides i_slice_count.
-	ISliceMaxMbs int32
-	// Min number of MBs per slice.
-	ISliceMinMbs int32
-	// Number of slices per frame: forces rectangular slices.
-	ISliceCount int32
-	// Absolute cap on slices per frame; stops applying slice-max-size and slice-max-mbs if this is reached.
-	ISliceCountMax int32
+	/* Slicing parameters */
+	iSliceMaxSize  int32 /* Max size per slice in bytes; includes estimated NAL overhead. */
+	iSliceMaxMbs   int32 /* Max number of MBs per slice; overrides iSliceCount. */
+	iSliceMinMbs   int32 /* Min number of MBs per slice */
+	iSliceCount    int32 /* Number of slices per frame: forces rectangular slices. */
+	iSliceCountMax int32 /* Absolute cap on slices per frame; stops applying slice-max-size
+	 * and slice-max-mbs if this is reached. */
 
-	//_           [4]byte
-	ParamFree   *[0]byte
-	NaluProcess *[0]byte
-}
+	ParamFree   *func(arg unsafe.Pointer)
+	NaluProcess *func(H []T, Nal []X264NalT, Opaque unsafe.Pointer)
 
-type Vui struct {
-	/* they will be reduced to be 0 < x <= 65535 and prime */
-	ISarHeight int32
-	ISarWidth  int32
-
-	IOverscan int32 /* 0=undef, 1=no overscan, 2=overscan */
-
-	/* see h264 annex E for the values of the following */
-	IVidformat int32
-	BFullrange int32
-	IColorprim int32
-	ITransfer  int32
-	IColmatrix int32
-	IChromaLoc int32 /* both top & bottom */
-}
-
-type Analyse struct {
-	Intra uint32 /* intra partitions */
-	Inter uint32 /* inter partitions */
-
-	BTransform8x8   int32
-	IWeightedPred   int32 /* weighting for P-frames */
-	BWeightedBipred int32 /* implicit weighting for B-frames */
-	IDirectMvPred   int32 /* spatial vs temporal mv prediction */
-	IChromaQpOffset int32
-
-	IMeMethod        int32   /* motion estimation algorithm to use (X264_ME_*) */
-	IMeRange         int32   /* integer pixel motion estimation search range (from predicted mv) */
-	IMvRange         int32   /* maximum length of a mv (in pixels). -1 = auto, based on level */
-	IMvRangeThread   int32   /* minimum space between threads. -1 = auto, based on number of threads. */
-	ISubpelRefine    int32   /* subpixel motion estimation quality */
-	BChromaMe        int32   /* chroma ME for subpel and mode decision in P-frames */
-	BMixedReferences int32   /* allow each mb partition to have its own reference number */
-	ITrellis         int32   /* trellis RD quantization */
-	BFastPskip       int32   /* early SKIP detection on P-frames */
-	BDctDecimate     int32   /* transform coefficient thresholding on P-frames */
-	INoiseReduction  int32   /* adaptive pseudo-deadzone */
-	FPsyRd           float32 /* Psy RD strength */
-	FPsyTrellis      float32 /* Psy trellis strength */
-	BPsy             int32   /* Toggle all psy optimizations */
-
-	BMbInfo       int32 /* Use input mb_info data in x264_picture_t */
-	BMbInfoUpdate int32 /* Update the values in mb_info according to the results of encoding. */
-
-	/* the deadzone size that will be used in luma quantization */
-	ILumaDeadzone [2]int32
-
-	BPsnr int32 /* compute and print PSNR stats */
-	BSsim int32 /* compute and print SSIM stats */
-}
-
-type Rc struct {
-	IRcMethod int32 /* X264_RC_* */
-
-	IQpConstant int32 /* 0=lossless */
-	IQpMin      int32 /* min allowed QP value */
-	IQpMax      int32 /* max allowed QP value */
-	IQpStep     int32 /* max QP step between frames */
-
-	IBitrate       int32
-	FRfConstant    float32 /* 1pass VBR, nominal QP */
-	FRfConstantMax float32 /* In CRF mode, maximum CRF as caused by VBV */
-	FRateTolerance float32
-	IVbvMaxBitrate int32
-	IVbvBufferSize int32
-	FVbvBufferInit float32 /* <=1: fraction of buffer_size. >1: kbit */
-	FIpFactor      float32
-	FPbFactor      float32
-
-	/* VBV filler: force CBR VBV and use filler bytes to ensure hard-CBR.
-	 * Implied by NAL-HRD CBR. */
-	BFiller int32
-
-	IAqMode     int32 /* psy adaptive QP. (X264_AQ_*) */
-	FAqStrength float32
-	BMbTree     int32 /* Macroblock-tree ratecontrol. */
-	ILookahead  int32
-
-	/* 2pass */
-	BStatWrite int32 /* Enable stat writing in psz_stat_out */
-	PszStatOut *int8 /* output filename (in UTF-8) of the 2pass stats file */
-	BStatRead  int32 /* Read stat from psz_stat_in and use it */
-	//_         [4]byte
-	PszStatIn *int8 /* input filename (in UTF-8) of the 2pass stats file */
-
-	/* 2pass params (same as ffmpeg ones) */
-	FQcompress      float32 /* 0.0 => cbr, 1.0 => constant qp */
-	FQblur          float32 /* temporally blur quants */
-	FComplexityBlur float32 /* temporally blur complexity */
-	//_               [4]byte
-	Zones  *Zone /* ratecontrol overrides */
-	IZones int32 /* number of zone_t's */
-	//_      [4]byte
-	PszZones *int8 /* alternate method of specifying zones */
+	Opaque unsafe.Pointer
 }
 
 // PicStruct enumeration.
@@ -498,32 +499,6 @@ func (t *T) cptr() *C.x264_t {
 // cptr return C pointer.
 func (n *X264NalT) cptr() *C.x264_nal_t {
 	return (*C.x264_nal_t)(unsafe.Pointer(n))
-}
-
-// CropRect (cropping rectangle parameters) type.
-// Added to those implicitly defined by non-mod16 video resolutions.
-type CropRect struct {
-	Left   uint32
-	Top    uint32
-	Right  uint32
-	Bottom uint32
-}
-
-// Zone type.
-// Zones: override ratecontrol or other options for specific sections of the video.
-// See EncoderReconfig() for which options can be changed.
-// If zones overlap, whichever comes later in the list takes precedence.
-type Zone struct {
-	// Range of frame numbers.
-	IStart int32
-	// Range of frame numbers.
-	IEnd int32
-	// Whether to use qp vs bitrate factor.
-	BForceQp       int32
-	IQp            int32
-	FBitrateFactor float32
-	//_              [4]byte
-	Param *X264ParamT
 }
 
 // Level (H.264 level restriction information) type.
