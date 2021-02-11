@@ -238,10 +238,10 @@ type Zone struct {
 	BForceQp       int32 /* whether to use qp vs bitrate factor */
 	IQp            int32
 	FBitrateFactor float32
-	Param          *X264ParamT
+	Param          *Param
 }
 
-type X264ParamT struct {
+type Param struct {
 	/* CPU flags */
 	Cpu               uint32
 	IThreads          int32 /* encode multiple frames in parallel */
@@ -628,7 +628,7 @@ type Picture struct {
 	   aspect ratio, can only be changed per-GOP due to the limitations
 	   of H.264 itself; in this case, the caller must force an IDR frame
 	   if it needs the changed parameter to apply immediately. */
-	Param *X264ParamT
+	Param *Param
 	/* In: raw image data */
 	/* Out: reconstructed image data.  x264 may skip part of the reconstruction process,
 	   e.g. deblocking, in frames where it isn't necessary.  To force complete
@@ -649,7 +649,7 @@ func (t *T) cptr() *C.x264_t { return (*C.x264_t)(unsafe.Pointer(t)) }
 
 func (n *Nal) cptr() *C.x264_nal_t { return (*C.x264_nal_t)(unsafe.Pointer(n)) }
 
-func (p *X264ParamT) cptr() *C.x264_param_t { return (*C.x264_param_t)(unsafe.Pointer(p)) }
+func (p *Param) cptr() *C.x264_param_t { return (*C.x264_param_t)(unsafe.Pointer(p)) }
 
 func (p *Picture) cptr() *C.x264_picture_t { return (*C.x264_picture_t)(unsafe.Pointer(p)) }
 
@@ -662,12 +662,12 @@ func NalEncode(h *T, dst []byte, nal *Nal) {
 }
 
 // ParamDefault - fill Param with default values and do CPU detection.
-func ParamDefault(param *X264ParamT) {
+func ParamDefault(param *Param) {
 	C.x264_param_default(param.cptr())
 }
 
 // ParamParse - set one parameter by name. Returns 0 on success.
-func ParamParse(param *X264ParamT, name string, value string) int32 {
+func ParamParse(param *Param, name string, value string) int32 {
 	cparam := param.cptr()
 
 	cname := C.CString(name)
@@ -691,7 +691,7 @@ func ParamParse(param *X264ParamT, name string, value string) int32 {
 // "film", "animation", "grain", "stillimage", "psnr", "ssim", "fastdecode", "zerolatency".
 //
 // Returns 0 on success, negative on failure (e.g. invalid preset/tune name).
-func ParamDefaultPreset(param *X264ParamT, preset string, tune string) int32 {
+func ParamDefaultPreset(param *Param, preset string, tune string) int32 {
 	cparam := param.cptr()
 
 	cpreset := C.CString(preset)
@@ -707,7 +707,7 @@ func ParamDefaultPreset(param *X264ParamT, preset string, tune string) int32 {
 
 // ParamApplyFastfirstpass - if first-pass mode is set (rc.b_stat_read == 0, rc.b_stat_write == 1),
 // modify the encoder settings to disable options generally not useful on the first pass.
-func ParamApplyFastfirstpass(param *X264ParamT) {
+func ParamApplyFastfirstpass(param *Param) {
 	cparam := param.cptr()
 	C.x264_param_apply_fastfirstpass(cparam)
 }
@@ -719,7 +719,7 @@ func ParamApplyFastfirstpass(param *X264ParamT) {
 // (can be nil, in which case the function will do nothing).
 //
 // Returns 0 on success, negative on failure (e.g. invalid profile name).
-func ParamApplyProfile(param *X264ParamT, profile string) int32 {
+func ParamApplyProfile(param *Param, profile string) int32 {
 	cparam := param.cptr()
 
 	cprofile := C.CString(profile)
@@ -758,7 +758,7 @@ func PictureClean(pic *Picture) {
 }
 
 // EncoderOpen - create a new encoder handler, all parameters from Param are copied.
-func EncoderOpen(param *X264ParamT) *T {
+func EncoderOpen(param *Param) *T {
 	cparam := param.cptr()
 
 	ret := C.x264_encoder_open(cparam)
@@ -768,7 +768,7 @@ func EncoderOpen(param *X264ParamT) *T {
 
 // EncoderReconfig - various parameters from Param are copied.
 // Returns 0 on success, negative on parameter validation error.
-func EncoderReconfig(enc *T, param *X264ParamT) int32 {
+func EncoderReconfig(enc *T, param *Param) int32 {
 	cenc := enc.cptr()
 	cparam := param.cptr()
 
@@ -778,7 +778,7 @@ func EncoderReconfig(enc *T, param *X264ParamT) int32 {
 }
 
 // EncoderParameters - copies the current internal set of parameters to the pointer provided.
-func EncoderParameters(enc *T, param *X264ParamT) {
+func EncoderParameters(enc *T, param *Param) {
 	cenc := enc.cptr()
 	cparam := param.cptr()
 

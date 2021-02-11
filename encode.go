@@ -67,7 +67,7 @@ func NewEncoder(w io.Writer, opts *Options) (e *Encoder, err error) {
 	e.nals = make([]*x264c.Nal, 3)
 	e.img = color.NewYCbCr(image.Rect(0, 0, e.opts.Width, e.opts.Height))
 
-	param := x264c.X264ParamT{}
+	param := x264c.Param{}
 
 	if e.opts.Preset != "" && e.opts.Profile != "" {
 		ret := x264c.ParamDefaultPreset(&param, e.opts.Preset, e.opts.Tune)
