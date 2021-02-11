@@ -10,7 +10,8 @@ import (
 	"path/filepath"
 	"testing"
 
-	color2 "github.com/sergystepanov/x264-go/v2/x264c/color"
+	col "github.com/sergystepanov/x264-go/v2/x264c/color"
+	x264c "github.com/sergystepanov/x264-go/v2/x264c/external"
 )
 
 func TestEncode(t *testing.T) {
@@ -23,7 +24,7 @@ func TestEncode(t *testing.T) {
 		Tune:      "zerolatency",
 		Preset:    "veryfast",
 		Profile:   "high",
-		LogLevel:  LogDebug,
+		LogLevel:  x264c.LogDebug,
 	}
 
 	enc, err := NewEncoder(buf, opts)
@@ -31,7 +32,7 @@ func TestEncode(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	img := color2.NewYCbCr(image.Rect(0, 0, opts.Width, opts.Height))
+	img := col.NewYCbCr(image.Rect(0, 0, opts.Width, opts.Height))
 	draw.Draw(img, img.Bounds(), image.Black, image.ZP, draw.Src)
 
 	for i := 0; i < opts.Width/2; i++ {
@@ -69,7 +70,7 @@ func TestEncodeFlush(t *testing.T) {
 		Tune:      "film",
 		Preset:    "fast",
 		Profile:   "high",
-		LogLevel:  LogDebug,
+		LogLevel:  x264c.LogDebug,
 	}
 
 	enc, err := NewEncoder(buf, opts)
@@ -77,7 +78,7 @@ func TestEncodeFlush(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	img := color2.NewYCbCr(image.Rect(0, 0, opts.Width, opts.Height))
+	img := col.NewYCbCr(image.Rect(0, 0, opts.Width, opts.Height))
 	draw.Draw(img, img.Bounds(), image.Black, image.ZP, draw.Src)
 
 	for i := 0; i < opts.Width/2; i++ {

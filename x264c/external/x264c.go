@@ -45,7 +45,7 @@ const (
  * All data returned in an x264_nal_t, including the data in p_payload, is no longer
  * valid after the next call to x264_encoder_encode.  Thus it must be used or copied
  * before calling x264_encoder_encode or x264_encoder_headers again. */
-type X264NalT struct {
+type Nal struct {
 	IRefIdc        int32 /* nal_priority_e */
 	IType          int32 /* nal_unit_type_e */
 	BLongStartcode int32
@@ -71,93 +71,93 @@ type X264NalT struct {
 
 const (
 	/* x86 */
-	X264CpuMmx    uint32 = 1 << 0
-	X264CpuMmx2   uint32 = 1 << 1 /* MMX2 aka MMXEXT aka ISSE */
-	X264CpuMmxext        = X264CpuMmx2
-	X264CpuSse    uint32 = 1 << 2
-	X264CpuSse2   uint32 = 1 << 3
-	X264CpuLzcnt  uint32 = 1 << 4
-	X264CpuSse3   uint32 = 1 << 5
-	X264CpuSsse3  uint32 = 1 << 6
-	X264CpuSse4   uint32 = 1 << 7  /* SSE4.1 */
-	X264CpuSse42  uint32 = 1 << 8  /* SSE4.2 */
-	X264CpuAvx    uint32 = 1 << 9  /* Requires OS support even if YMM registers aren't used */
-	X264CpuXop    uint32 = 1 << 10 /* AMD XOP */
-	X264CpuFma4   uint32 = 1 << 11 /* AMD FMA4 */
-	X264CpuFma3   uint32 = 1 << 12
-	X264CpuBmi1   uint32 = 1 << 13
-	X264CpuBmi2   uint32 = 1 << 14
-	X264CpuAvx2   uint32 = 1 << 15
-	X264CpuAvx512 uint32 = 1 << 16 /* AVX-512 {F, CD, BW, DQ, VL}, requires OS support */
+	CpuMmx    uint32 = 1 << 0
+	CpuMmx2   uint32 = 1 << 1 /* MMX2 aka MMXEXT aka ISSE */
+	CpuMmxext        = CpuMmx2
+	CpuSse    uint32 = 1 << 2
+	CpuSse2   uint32 = 1 << 3
+	CpuLzcnt  uint32 = 1 << 4
+	CpuSse3   uint32 = 1 << 5
+	CpuSsse3  uint32 = 1 << 6
+	CpuSse4   uint32 = 1 << 7  /* SSE4.1 */
+	CpuSse42  uint32 = 1 << 8  /* SSE4.2 */
+	CpuAvx    uint32 = 1 << 9  /* Requires OS support even if YMM registers aren't used */
+	CpuXop    uint32 = 1 << 10 /* AMD XOP */
+	CpuFma4   uint32 = 1 << 11 /* AMD FMA4 */
+	CpuFma3   uint32 = 1 << 12
+	CpuBmi1   uint32 = 1 << 13
+	CpuBmi2   uint32 = 1 << 14
+	CpuAvx2   uint32 = 1 << 15
+	CpuAvx512 uint32 = 1 << 16 /* AVX-512 {F, CD, BW, DQ, VL}, requires OS support */
 	/* x86 modifiers */
-	X264CpuCacheline32 uint32 = 1 << 17 /* avoid memory loads that span the border between two cachelines */
-	X264CpuCacheline64 uint32 = 1 << 18 /* 32/64 is the size of a cacheline in bytes */
-	X264CpuSse2IsSlow  uint32 = 1 << 19 /* avoid most SSE2 functions on Athlon64 */
-	X264CpuSse2IsFast  uint32 = 1 << 20 /* a few functions are only faster on Core2 and Phenom */
-	X264CpuSlowShuffle uint32 = 1 << 21 /* The Conroe has a slow shuffle unit (relative to overall SSE performance) */
-	X264CpuStackMod4   uint32 = 1 << 22 /* if stack is only mod4 and not mod16 */
-	X264CpuSlowAtom    uint32 = 1 << 23 /* The Atom is terrible: slow SSE unaligned loads, slow
+	CpuCacheline32 uint32 = 1 << 17 /* avoid memory loads that span the border between two cachelines */
+	CpuCacheline64 uint32 = 1 << 18 /* 32/64 is the size of a cacheline in bytes */
+	CpuSse2IsSlow  uint32 = 1 << 19 /* avoid most SSE2 functions on Athlon64 */
+	CpuSse2IsFast  uint32 = 1 << 20 /* a few functions are only faster on Core2 and Phenom */
+	CpuSlowShuffle uint32 = 1 << 21 /* The Conroe has a slow shuffle unit (relative to overall SSE performance) */
+	CpuStackMod4   uint32 = 1 << 22 /* if stack is only mod4 and not mod16 */
+	CpuSlowAtom    uint32 = 1 << 23 /* The Atom is terrible: slow SSE unaligned loads, slow
 	 * SIMD multiplies, slow SIMD variable shifts, slow pshufb,
 	 * cacheline split penalties -- gather everything here that
 	 * isn't shared by other CPUs to avoid making half a dozen
 	 * new SLOW flags. */
-	X264CpuSlowPshufb  uint32 = 1 << 24 /* such as on the Intel Atom */
-	X264CpuSlowPalignr uint32 = 1 << 25 /* such as on the AMD Bobcat */
+	CpuSlowPshufb  uint32 = 1 << 24 /* such as on the Intel Atom */
+	CpuSlowPalignr uint32 = 1 << 25 /* such as on the AMD Bobcat */
 
 	/* PowerPC */
-	X264CpuAltivec uint32 = 0x0000001
+	CpuAltivec uint32 = 0x0000001
 
 	/* ARM and AArch64 */
-	X264CpuArmv6       uint32 = 0x0000001
-	X264CpuNeon        uint32 = 0x0000002 /* ARM NEON */
-	X264CpuFastNeonMrc uint32 = 0x0000004 /* Transfer from NEON to ARM register is fast (Cortex-A9) */
-	X264CpuArmv8       uint32 = 0x0000008
+	CpuArmv6       uint32 = 0x0000001
+	CpuNeon        uint32 = 0x0000002 /* ARM NEON */
+	CpuFastNeonMrc uint32 = 0x0000004 /* Transfer from NEON to ARM register is fast (Cortex-A9) */
+	CpuArmv8       uint32 = 0x0000008
 
 	/* MIPS */
-	X264CpuMsa uint32 = 0x0000001 /* MIPS MSA */
+	CpuMsa uint32 = 0x0000001 /* MIPS MSA */
 
 	/* Analyse flags */
-	X264AnalyseI4x4      uint32 = 0x0001 /* Analyse i4x4 */
-	X264AnalyseI8x8      uint32 = 0x0002 /* Analyse i8x8 (requires 8x8 transform) */
-	X264AnalysePsub16x16 uint32 = 0x0010 /* Analyse p16x8, p8x16 and p8x8 */
-	X264AnalysePsub8x8   uint32 = 0x0020 /* Analyse p8x4, p4x8, p4x4 */
-	X264AnalyseBsub16x16 uint32 = 0x0100 /* Analyse b16x8, b8x16 and b8x8 */
+	AnalyseI4x4      uint32 = 0x0001 /* Analyse i4x4 */
+	AnalyseI8x8      uint32 = 0x0002 /* Analyse i8x8 (requires 8x8 transform) */
+	AnalysePsub16x16 uint32 = 0x0010 /* Analyse p16x8, p8x16 and p8x8 */
+	AnalysePsub8x8   uint32 = 0x0020 /* Analyse p8x4, p4x8, p4x4 */
+	AnalyseBsub16x16 uint32 = 0x0100 /* Analyse b16x8, b8x16 and b8x8 */
 
-	X264DirectPredNone       = 0
-	X264DirectPredSpatial    = 1
-	X264DirectPredTemporal   = 2
-	X264DirectPredAuto       = 3
-	X264MeDia                = 0
-	X264MeHex                = 1
-	X264MeUmh                = 2
-	X264MeEsa                = 3
-	X264MeTesa               = 4
-	X264CqmFlat              = 0
-	X264CqmJvt               = 1
-	X264CqmCustom            = 2
-	X264RcCqp                = 0
-	X264RcCrf                = 1
-	X264RcAbr                = 2
-	X264QpAuto               = 0
-	X264AqNone               = 0
-	X264AqVariance           = 1
-	X264AqAutovariance       = 2
-	X264AqAutovarianceBiased = 3
-	X264BAdaptNone           = 0
-	X264BAdaptFast           = 1
-	X264BAdaptTrellis        = 2
-	X264WeightpNone          = 0
-	X264WeightpSimple        = 1
-	X264WeightpSmart         = 2
-	X264BPyramidNone         = 0
-	X264BPyramidStrict       = 1
-	X264BPyramidNormal       = 2
-	X264KeyintMinAuto        = 0
-	X264KeyintMaxInfinite    = 1 << 30
+	DirectPredNone       = 0
+	DirectPredSpatial    = 1
+	DirectPredTemporal   = 2
+	DirectPredAuto       = 3
+	MeDia                = 0
+	MeHex                = 1
+	MeUmh                = 2
+	MeEsa                = 3
+	MeTesa               = 4
+	CqmFlat              = 0
+	CqmJvt               = 1
+	CqmCustom            = 2
+	RcCqp                = 0
+	RcCrf                = 1
+	RcAbr                = 2
+	QpAuto               = 0
+	AqNone               = 0
+	AqVariance           = 1
+	AqAutovariance       = 2
+	AqAutovarianceBiased = 3
+	BAdaptNone           = 0
+	BAdaptFast           = 1
+	BAdaptTrellis        = 2
+	WeightpNone          = 0
+	WeightpSimple        = 1
+	WeightpSmart         = 2
+	BPyramidNone         = 0
+	BPyramidStrict       = 1
+	BPyramidNormal       = 2
+	KeyintMinAuto        = 0
+	KeyintMaxInfinite    = 1 << 30
 
 	/* AVC-Intra flavors */
-	X264AvcintraFlavorPanasonic = 0
-	X264AvcintraFlavorSony      = 1
+	AvcintraFlavorPanasonic = 0
+	AvcintraFlavorSony      = 1
 
 	/* !to add missing names */
 	/* static const char * const x264_direct_pred_names[] = { "none", "spatial", "temporal", "auto", 0 }; */
@@ -173,60 +173,60 @@ const (
 	/* static const char * const x264_avcintra_flavor_names[] = { "panasonic", "sony", 0 }; */
 
 	/* Colorspace type */
-	X264CspMask      = 0x00ff /* */
-	X264CspNone      = 0x0000 /* Invalid mode     */
-	X264CspI400      = 0x0001 /* monochrome 4:0:0 */
-	X264CspI420      = 0x0002 /* yuv 4:2:0 planar */
-	X264CspYv12      = 0x0003 /* yvu 4:2:0 planar */
-	X264CspNv12      = 0x0004 /* yuv 4:2:0, with one y plane and one packed u+v */
-	X264CspNv21      = 0x0005 /* yuv 4:2:0, with one y plane and one packed v+u */
-	X264CspI422      = 0x0006 /* yuv 4:2:2 planar */
-	X264CspYv16      = 0x0007 /* yvu 4:2:2 planar */
-	X264CspNv16      = 0x0008 /* yuv 4:2:2, with one y plane and one packed u+v */
-	X264CspYuyv      = 0x0009 /* yuyv 4:2:2 packed */
-	X264CspUyvy      = 0x000a /* uyvy 4:2:2 packed */
-	X264CspV210      = 0x000b /* 10-bit yuv 4:2:2 packed in 32 */
-	X264CspI444      = 0x000c /* yuv 4:4:4 planar */
-	X264CspYv24      = 0x000d /* yvu 4:4:4 planar */
-	X264CspBgr       = 0x000e /* packed bgr 24bits */
-	X264CspBgra      = 0x000f /* packed bgr 32bits */
-	X264CspRgb       = 0x0010 /* packed rgb 24bits */
-	X264CspMax       = 0x0011 /* end of list */
-	X264CspVflip     = 0x1000 /* the csp is vertically flipped */
-	X264CspHighDepth = 0x2000 /* the csp has a depth of 16 bits per pixel component */
+	CspMask      = 0x00ff /* */
+	CspNone      = 0x0000 /* Invalid mode     */
+	CspI400      = 0x0001 /* monochrome 4:0:0 */
+	CspI420      = 0x0002 /* yuv 4:2:0 planar */
+	CspYv12      = 0x0003 /* yvu 4:2:0 planar */
+	CspNv12      = 0x0004 /* yuv 4:2:0, with one y plane and one packed u+v */
+	CspNv21      = 0x0005 /* yuv 4:2:0, with one y plane and one packed v+u */
+	CspI422      = 0x0006 /* yuv 4:2:2 planar */
+	CspYv16      = 0x0007 /* yvu 4:2:2 planar */
+	CspNv16      = 0x0008 /* yuv 4:2:2, with one y plane and one packed u+v */
+	CspYuyv      = 0x0009 /* yuyv 4:2:2 packed */
+	CspUyvy      = 0x000a /* uyvy 4:2:2 packed */
+	CspV210      = 0x000b /* 10-bit yuv 4:2:2 packed in 32 */
+	CspI444      = 0x000c /* yuv 4:4:4 planar */
+	CspYv24      = 0x000d /* yvu 4:4:4 planar */
+	CspBgr       = 0x000e /* packed bgr 24bits */
+	CspBgra      = 0x000f /* packed bgr 32bits */
+	CspRgb       = 0x0010 /* packed rgb 24bits */
+	CspMax       = 0x0011 /* end of list */
+	CspVflip     = 0x1000 /* the csp is vertically flipped */
+	CspHighDepth = 0x2000 /* the csp has a depth of 16 bits per pixel component */
 
 	/* Slice type */
-	X264TypeAuto     = 0x0000 /* Let x264 choose the right type */
-	X264TypeIdr      = 0x0001
-	X264TypeI        = 0x0002
-	X264TypeP        = 0x0003
-	X264TypeBref     = 0x0004 /* Non-disposable B-frame */
-	X264TypeB        = 0x0005
-	X264TypeKeyframe = 0x0006 /* IDR or I depending on b_open_gop option */
+	TypeAuto     = 0x0000 /* Let x264 choose the right type */
+	TypeIdr      = 0x0001
+	TypeI        = 0x0002
+	TypeP        = 0x0003
+	TypeBref     = 0x0004 /* Non-disposable B-frame */
+	TypeB        = 0x0005
+	TypeKeyframe = 0x0006 /* IDR or I depending on b_open_gop option */
 	/* !to reimplement macro */
 	/* #define IS_X264_TYPE_I(x) ((x)==X264_TYPE_I || (x)==X264_TYPE_IDR || (x)==X264_TYPE_KEYFRAME) */
 	/* #define IS_X264_TYPE_B(x) ((x)==X264_TYPE_B || (x)==X264_TYPE_BREF) */
 
 	/* Log level */
-	X264LogNone    = -1
-	X264LogError   = 0
-	X264LogWarning = 1
-	X264LogInfo    = 2
-	X264LogDebug   = 3
+	LogNone    = -1
+	LogError   = 0
+	LogWarning = 1
+	LogInfo    = 2
+	LogDebug   = 3
 
 	/* Threading */
-	X264ThreadsAuto       = 0  /* Automatically select optimal number of threads */
-	X264SyncLookaheadAuto = -1 /* Automatically select optimal lookahead thread buffer size */
+	ThreadsAuto       = 0  /* Automatically select optimal number of threads */
+	SyncLookaheadAuto = -1 /* Automatically select optimal lookahead thread buffer size */
 
 	/* HRD */
-	X264NalHrdNone = 0
-	X264NalHrdVbr  = 1
-	X264NalHrdCbr  = 2
+	NalHrdNone = 0
+	NalHrdVbr  = 1
+	NalHrdCbr  = 2
 )
 
 const (
 	/* The macroblock is constant and remains unchanged from the previous frame. */
-	X264MbinfoConstant = 1 << 0
+	MbinfoConstant = 1 << 0
 	/* More flags may be added in the future. */
 )
 
@@ -477,7 +477,7 @@ type X264ParamT struct {
 	 * and slice-max-mbs if this is reached. */
 
 	ParamFree   *func(arg unsafe.Pointer)
-	NaluProcess *func(H []T, Nal []X264NalT, Opaque unsafe.Pointer)
+	NaluProcess *func(H []T, Nal []Nal, Opaque unsafe.Pointer)
 
 	Opaque unsafe.Pointer
 }
@@ -647,14 +647,14 @@ type Picture struct {
 
 func (t *T) cptr() *C.x264_t { return (*C.x264_t)(unsafe.Pointer(t)) }
 
-func (n *X264NalT) cptr() *C.x264_nal_t { return (*C.x264_nal_t)(unsafe.Pointer(n)) }
+func (n *Nal) cptr() *C.x264_nal_t { return (*C.x264_nal_t)(unsafe.Pointer(n)) }
 
 func (p *X264ParamT) cptr() *C.x264_param_t { return (*C.x264_param_t)(unsafe.Pointer(p)) }
 
 func (p *Picture) cptr() *C.x264_picture_t { return (*C.x264_picture_t)(unsafe.Pointer(p)) }
 
 // NalEncode - encode Nal.
-func NalEncode(h *T, dst []byte, nal *X264NalT) {
+func NalEncode(h *T, dst []byte, nal *Nal) {
 	ch := h.cptr()
 	cdst := (*C.uint8_t)(unsafe.Pointer(&dst[0]))
 	cnal := nal.cptr()
@@ -787,7 +787,7 @@ func EncoderParameters(enc *T, param *X264ParamT) {
 
 // EncoderHeaders - return the SPS and PPS that will be used for the whole stream.
 // Returns the number of bytes in the returned NALs or negative on error.
-func EncoderHeaders(enc *T, ppNal []*X264NalT, piNal *int32) int32 {
+func EncoderHeaders(enc *T, ppNal []*Nal, piNal *int32) int32 {
 	cenc := enc.cptr()
 
 	cppNal := (**C.x264_nal_t)(unsafe.Pointer(&ppNal[0]))
@@ -800,7 +800,7 @@ func EncoderHeaders(enc *T, ppNal []*X264NalT, piNal *int32) int32 {
 
 // EncoderEncode - encode one picture.
 // Returns the number of bytes in the returned NALs, negative on error and zero if no NAL units returned.
-func EncoderEncode(enc *T, ppNal []*X264NalT, piNal *int32, picIn *Picture, picOut *Picture) int32 {
+func EncoderEncode(enc *T, ppNal []*Nal, piNal *int32, picIn *Picture, picOut *Picture) int32 {
 	cenc := enc.cptr()
 
 	cppNal := (**C.x264_nal_t)(unsafe.Pointer(&ppNal[0]))
