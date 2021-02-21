@@ -9,6 +9,8 @@ package external
 import "C"
 import "unsafe"
 
+const Build = C.X264_BUILD
+
 /* T is opaque handler for encoder */
 type T struct{}
 
