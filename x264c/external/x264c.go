@@ -301,7 +301,7 @@ type Param struct {
 	BOpenGop        int32
 	BBlurayCompat   int32
 	IAvcintraClass  int32
-	IAvcintraFlavor int32
+	//IAvcintraFlavor int32
 
 	BDeblockingFilter        int32
 	IDeblockingFilterAlphac0 int32 /* [-6, 6] -6 light filter, 6 strong */
